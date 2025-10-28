@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인재원 영어 학생 리포트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background-color: #f4f7f6; /* 부드러운 배경색 */
+        }
+        .flatpickr-calendar {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        /* 인쇄 시 불필요한 요소 숨기기 */
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            #input-section, #report-buttons {
+                display: none !important;
+            }
+            #report-view {
+                display: block !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                border: none !important;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- =========== 1. 교사 편집 화면 =========== -->
+    <div id="input-section">
+        <div class="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-8">
+            <!-- 헤더 -->
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-indigo-700">인재원 영어 학생 리포트</h1>
+                <p class="mt-2 text-lg text-gray-600">학생 데이터를 기반으로 학부모님께 전달할 상세 리포트를 생성합니다.</p>
+            </div>
+
+            <!-- 0. API 키 설정 (신규 추가) -->
+            <div class="space-y-4 p-4 bg-gray-100 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-gray-500 pl-3">0. API 키 설정 (최초 1회)</h2>
+                <p class="text-sm text-gray-600">이 프로그램을 다른 환경에서 사용하려면 Google AI Studio에서 발급받은 API 키가 필요합니다. 입력된 키는 이 브라우저에만 저장됩니다.</p>
+                <div>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Google AI API Key</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="apiKeyInput" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="AIza...">
+                        <button id="saveApiKey" class="w-full sm:w-auto bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200">
+                            키 저장하기
+                        </button>
+                    </div>
+                    <p id="apiKeyStatus" class="text-sm mt-2 hidden"></p>
+                </div>
+            </div>
+
+
+            <hr>
+
+            <!-- 1. 기본 정보 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">1. 기본 정보</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">학생 이름</label>
+                        <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="예: 김소선">
+                    </div>
+                    <div>
+                        <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-1">리포트 날짜</label>
+                        <input type="text" id="reportDate" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="날짜 선택">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 영어 테스트 점수 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">2. 영어 테스트 점수 (100점 만점)</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="scoreListening" class="block text-sm font-medium text-gray-700 mb-1">듣기 (L/C)</label>
+                        <input type="number" id="scoreListening" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="85" value="85">
+                    </div>
+                    <div>
+                        <label for="scoreReading" class="block text-sm font-medium text-gray-700 mb-1">독해 (R/C)</label>
+                        <input type="number" id="scoreReading" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="90" value="90">
+                    </div>
+                    <div>
+                        <label for="scoreGrammar" class="block text-sm font-medium text-gray-700 mb-1">문법 (Grammar)</label>
+                        <input type="number" id="scoreGrammar" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="75" value="75">
+                    </div>
+                    <div>
+                        <label for="scoreVocab" class="block text-sm font-medium text-gray-700 mb-1">어휘 (Voca)</label>
+                        <input type="number" id="scoreVocab" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="95" value="95">
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <canvas id="scoreChartInput"></canvas>
+                </div>
+            </div>
+
+            <!-- 3. 학습 태도 및 역량 -->
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">3. 학습 태도 및 역량</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    
+                    <!-- 항목들 -->
+                    <div class="space-y-1">
+                        <label for="select-participation" class="text-sm font-medium text-gray-700">수업 참여도</label>
+                        <select id="select-participation" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (적극적 발표, 주도적 참여)</option>
+                            <option value="우수">우수 (성실히 참여, 긍정적 반응)</option>
+                            <option value="보통">보통 (대체로 참여하나 기복이 있음)</option>
+                            <option value="개선 필요">개선 필요 (다소 소극적, 참여 독려 필요)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-engagement" class="text-sm font-medium text-gray-700">수업 몰입도</label>
+                        <select id="select-engagement" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (높은 집중력, 수업 내용 완전 흡수)</option>
+                            <option value="우수">우수 (대부분의 시간 집중, 교사 지시 잘 따름)</option>
+                            <option value="보통">보통 (가끔 멍하거나 주의가 산만해짐)</option>
+                            <option value="개선 필요">개선 필요 (집중 시간이 짧음, 주변 자극에 민감)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-attitude" class="text-sm font-medium text-gray-700">학습 태도</label>
+                        <select id="select-attitude" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (열정적, 긍정적, 배우려는 의지 높음)</option>
+                            <option value="우수">우수 (성실하고 꾸준함, 예의 바름)</option>
+                            <option value="보통">보통 (태도의 기복이 있음, 동기부여 필요)</option>
+                            <option value="개선 필요">개선 필요 (다소 수동적이거나 불성실할 때가 있음)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-diligence" class="text-sm font-medium text-gray-700">성실함 (숙제/출결)</label>
+                        <select id="select-diligence" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (숙제 완성도 높음, 지각/결석 없음)</option>
+                            <option value="우수">우수 (대부분 성실히 이행, 가끔 누락)</option>
+                            <option value="보통">보통 (숙제 마감일에 닥쳐서 하거나 완성도 부족)</option>
+                            <option value="개선 필요">개선 필요 (숙제 누락/지각 빈번, 관리 필요)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-proactiveness" class="text-sm font-medium text-gray-700">주도성 (질문/탐구)</label>
+                        <select id="select-proactiveness" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (스스로 질문 찾음, 호기심 높음)</option>
+                            <option value="우수">우수 (이해 안되는 부분 질문, 추가 자료 요청)</option>
+                            <option value="보통">보통 (질문 있으나 망설임, 교사가 유도해야 함)</option>
+                            <option value="개선 필요">개선 필요 (질문 거의 없음, 수동적 학습)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-collaboration" class="text-sm font-medium text-gray-700">또래와의 협업 능력</label>
+                        <select id="select-collaboration" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (리더십 발휘, 친구 의견 경청 및 조율)</option>
+                            <option value="우수">우수 (협조적, 자기 역할 충실히 이행)</option>
+                            <option value="보통">보통 (참여는 하나 주도적이거나 적극적이진 않음)</option>
+                            <option value="개선 필요">개선 필요 (협업에 어려움, 개인 활동 선호)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-concept" class="text-sm font-medium text-gray-700">개념 성취도</label>
+                        <select id="select-concept" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (개념 이해 깊고 응용력 높음)</option>
+                            <option value="우수">우수 (개념 잘 이해하고 문제 풀이 정확)</option>
+                            <option value="보통">보통 (개념은 아나 응용에 시간 걸림)</option>
+                            <option value="개선 필요">개선 필요 (기본 개념 혼동, 반복 학습 필요)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-problemSolving" class="text-sm font-medium text-gray-700">문제 해결 능력</label>
+                        <select id="select-problemSolving" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (논리적, 복잡한 문제도 스스로 해결 시도)</option>
+                            <option value="우수">우수 (배운 개념 활용하여 문제 잘 해결)</option>
+                            <option value="보통">보통 (익숙한 유형은 잘 푸나 신유형 어려워함)</option>
+                            <option value="개선 필요">개선 필요 (문제 해결에 힌트/도움 많이 필요)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-perseverance" class="text-sm font-medium text-gray-700">문제에 대한 끈기</label>
+                        <select id="select-perseverance" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (어려운 문제도 포기하지 않고 매달림)</option>
+                            <option value="우수">우수 (시간이 걸려도 끝까지 풀려고 노력함)</option>
+                            <option value="보통">보통 (어려우면 쉽게 포기하거나 질문함)</option>
+                            <option value="개선 필요">개선 필요 (고난도 문제 회피 경향)</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-criticalThinking" class="text-sm font-medium text-gray-700">비판적 사고</label>
+                        <select id="select-criticalThinking" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수 (다각도로 생각, '왜?'라는 질문을 함)</option>
+                            <option value="우수">우수 (정보를 그대로 받아들이지 않고 검토함)</option>
+                            <option value="보통">보통 (교사의 유도가 있을 시 비판적 사고 가능)</option>
+                            <option value="개선 필요">개선 필요 (주어진 정보 수용에 익숙)</option>
+                        </select>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- 4. 리포트 생성 버튼 -->
+            <div class="pt-6 border-t">
+                <button id="generateButton" class="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 ease-in-out flex items-center justify-center">
+                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="buttonText">리포트 생성하기</span>
+                </button>
+            </div>
+            
+            <!-- 오류 메시지 표시 영역 -->
+            <div id="errorMessage" class="hidden p-4 bg-red-100 text-red-700 rounded-lg"></div>
+
+        </div>
+    </div>
+
+    <!-- =========== 2. 학부모 열람 화면 (숨겨진 상태) =========== -->
+    <div id="report-view" class="hidden">
+        <div class="max-w-4xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border border-gray-100" style="font-family: 'Noto Sans KR', sans-serif;">
+            
+            <!-- 리포트 상단 버튼 (인쇄 시 숨김) -->
+            <div id="report-buttons" class="mb-8 flex flex-col sm:flex-row gap-2 print:hidden">
+                <button id="editButton" class="w-full sm:w-auto flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200">
+                    내용 수정하기
+                </button>
+                <button id="printButton" class="w-full sm:w-auto flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-200">
+                    인쇄하기 (PDF 저장)
+                </button>
+            </div>
+
+            <!-- 리포트 제목 -->
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-indigo-700">인재원 영어 학생 리포트</h1>
+                <p id="report-date-display" class="mt-2 text-lg text-gray-600"></p>
+            </div>
+
+            <!-- 학생 정보 -->
+            <div class="mb-8 p-6 bg-indigo-50 rounded-lg">
+                <h2 id="report-student-name" class="text-2xl font-semibold text-gray-800"></h2>
+            </div>
+
+            <!-- 리포트 본문 (AI 생성) -->
+            <div class="space-y-6">
+                <h3 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">종합 코멘트</h3>
+                <div id="report-content" class="text-base md:text-lg leading-relaxed text-gray-700 whitespace-pre-wrap" style="line-height: 1.8;">
+                    <!-- AI가 생성한 텍스트가 여기에 삽입됩니다. -->
+                </div>
+            </div>
+
+            <hr class="my-10">
+
+            <!-- 성취도 차트 -->
+            <div class="space-y-6">
+                <h3 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">영어 영역별 성취도</h3>
+                <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+                    <canvas id="scoreChartOutput"></canvas>
+                </div>
+            </div>
+            
+            <!-- 리포트 하단 -->
+            <div class="mt-12 pt-6 border-t text-center text-gray-500 text-sm">
+                <p>본 리포트는 인재원 영어에서 학생의 성장을 돕기 위해 정성껏 작성되었습니다.</p>
+                <p class="font-semibold mt-1">인재원 영어</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        let globalApiKey = ""; // API 키를 저장할 전역 변수
+
+        // --- DOM 요소 참조 ---
+        const inputSection = document.getElementById('input-section');
+        const reportView = document.getElementById('report-view');
+        
+        const studentNameInput = document.getElementById('studentName');
+        const reportDateInput = document.getElementById('reportDate');
+        
+        const scoreListening = document.getElementById('scoreListening');
+        const scoreReading = document.getElementById('scoreReading');
+        const scoreGrammar = document.getElementById('scoreGrammar');
+        const scoreVocab = document.getElementById('scoreVocab');
+        
+        const generateButton = document.getElementById('generateButton');
+        const buttonText = document.getElementById('buttonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        const editButton = document.getElementById('editButton');
+        const printButton = document.getElementById('printButton');
+        
+        const reportStudentName = document.getElementById('report-student-name');
+        const reportDateDisplay = document.getElementById('report-date-display');
+        const reportContent = document.getElementById('report-content');
+        
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveApiKey = document.getElementById('saveApiKey');
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        
+        const selectElements = document.querySelectorAll('select[id^="select-"]');
+
+        let inputChartInstance = null;
+        let outputChartInstance = null;
+        let chartDataStore = {};
+
+        // --- 초기화 ---
+        function initializeApp() {
+            // Flatpickr (달력) 초기화
+            flatpickr(reportDateInput, {
+                dateFormat: "Y-m-d",
+                defaultDate: "today",
+                locale: "ko"
+            });
+            
+            loadKeyFromStorage(); // 앱 시작 시 API 키 불러오기
+
+            // 입력 차트 초기화
+            updateChartData();
+            renderInputChart();
+
+            // 점수 입력 시 차트 실시간 업데이트
+            [scoreListening, scoreReading, scoreGrammar, scoreVocab].forEach(input => {
+                input.addEventListener('input', () => {
+                    updateChartData();
+                    renderInputChart();
+                });
+            });
+
+            // 버튼 이벤트 리스너
+            generateButton.addEventListener('click', handleGenerateReport);
+            editButton.addEventListener('click', showInputView);
+            printButton.addEventListener('click', () => window.print());
+            saveApiKey.addEventListener('click', saveKeyToStorage); // 키 저장 버튼
+            apiKeyInput.addEventListener('input', () => {
+                apiKeyStatus.classList.add('hidden'); // 키 입력 시작하면 상태 메시지 숨김
+            });
+        }
+
+        // --- 차트 데이터 관리 ---
+        function updateChartData() {
+            chartDataStore = {
+                labels: ['듣기 (L/C)', '독해 (R/C)', '문법 (Grammar)', '어휘 (Voca)'],
+                datasets: [{
+                    label: '영역별 점수',
+                    data: [
+                        parseInt(scoreListening.value) || 0,
+                        parseInt(scoreReading.value) || 0,
+                        parseInt(scoreGrammar.value) || 0,
+                        parseInt(scoreVocab.value) || 0
+                    ],
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.6)',  // indigo-600
+                        'rgba(59, 130, 246, 0.6)', // blue-500
+                        'rgba(16, 185, 129, 0.6)', // emerald-500
+                        'rgba(234, 179, 8, 0.6)'   // yellow-500
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(234, 179, 8, 1)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            };
+        }
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: true,
+                    bodyFont: {
+                        font: {
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    },
+                    titleFont: {
+                        font: {
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    }
+                }
+            }
+        };
+
+        // --- 차트 렌더링 ---
+        function renderInputChart() {
+            const ctx = document.getElementById('scoreChartInput').getContext('2d');
+            if (inputChartInstance) {
+                inputChartInstance.data = chartDataStore;
+                inputChartInstance.update();
+            } else {
+                inputChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartDataStore,
+                    options: chartOptions
+                });
+            }
+        }
+        
+        function renderOutputChart() {
+            const ctx = document.getElementById('scoreChartOutput').getContext('2d');
+            if (outputChartInstance) {
+                outputChartInstance.destroy();
+            }
+            // 출력 차트는 input 차트와 동일한 데이터/옵션을 사용
+            outputChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: chartDataStore, 
+                options: chartOptions
+            });
+        }
+
+
+        // --- 뷰 전환 로직 ---
+        function showInputView() {
+            reportView.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            // 입력 폼 차트가 파괴되었을 수 있으니 다시 렌더링
+            // 차트 인스턴스가 유효한지 확인 후 렌더링
+             if (!inputChartInstance || !inputChartInstance.ctx) {
+                renderInputChart();
+            } else {
+                 // 차트 데이터만 업데이트
+                updateChartData();
+                inputChartInstance.data = chartDataStore;
+                inputChartInstance.update();
+            }
+        }
+
+        function showReportView(reportText, studentName, reportDate) {
+            // 1. 리포트 뷰에 데이터 채우기
+            reportStudentName.textContent = `${studentName} 학생`;
+            reportDateDisplay.textContent = `${formatDateString(reportDate)} 리포트`;
+            reportContent.textContent = reportText;
+            
+            // 2. 리포트 뷰 차트 렌더링 (데이터는 이미 chartDataStore에 있음)
+            renderOutputChart();
+
+            // 3. 뷰 전환
+            inputSection.classList.add('hidden');
+            reportView.classList.remove('hidden');
+            window.scrollTo(0, 0); // 페이지 상단으로 스크롤
+        }
+
+        // --- AI 리포트 생성 핸들러 ---
+        async function handleGenerateReport() {
+            // API 키 유무 체크 (신규 추가)
+            if (!globalApiKey) {
+                showError("API 키를 먼저 '0. API 키 설정'에서 입력하고 저장해 주세요.");
+                apiKeyInput.focus();
+                return;
+            }
+
+            const studentName = studentNameInput.value.trim();
+            const reportDate = reportDateInput.value;
+
+            if (!studentName) {
+                showError("학생 이름을 입력해 주세요.");
+                studentNameInput.focus();
+                return;
+            }
+            if (!reportDate) {
+                showError("리포트 날짜를 선택해 주세요.");
+                reportDateInput.focus();
+                return;
+            }
+
+            // 로딩 상태 시작
+            setLoading(true);
+
+            // 1. 점수 데이터 수집
+            const scores = {
+                "듣기": scoreListening.value || 0,
+                "독해": scoreReading.value || 0,
+                "문법": scoreGrammar.value || 0,
+                "어휘": scoreVocab.value || 0
+            };
+
+            // 2. 선택된 특성 데이터 수집
+            let characteristics = [];
+            selectElements.forEach(select => {
+                if (select.value) {
+                    const label = select.previousElementSibling.textContent;
+                    characteristics.push({
+                        item: label,
+                        level: select.value
+                    });
+                }
+            });
+
+            // 3. AI 프롬프트 구성
+            const systemPrompt = `당신은 '인재원 영어' 학원의 전문적이고 따뜻한 선생님입니다.
+학부모님께 학생의 리포트를 전달하는 역할을 맡고 있습니다.
+제공되는 학생의 정량적(점수) 및 정성적(특성) 데이터를 바탕으로, 자연스러운 하나의 완성된 리포트를 한국어로 작성해 주세요.
+
+**매우 중요 (인간적인 톤 & 분량):**
+-   **친근한 호칭:** 학생 이름이 주어지면(예: 김소선), **'소선 학생'이라고 부르지 말고 "소선이가", "소선이의", "소선이는"처럼 친근하게 이름을 불러주세요.** 이것이 가장 중요합니다.
+-   **간결한 분량:** 리포트 전체를 **10줄 내외로 매우 간결하게** 핵심만 요약해 주세요. 너무 길면 학부모님이 읽기 어렵습니다.
+-   **AI 티 안 나게:** 문체는 전문적이지만 따뜻하고, '정이 가는' 인간적인 톤을 유지해 주세요. AI가 생성한 티가 나지 않도록 기계적인 느낌을 최대한 배제하고 자연스러운 문장으로 연결해 주세요.
+-   **날짜 표현:** '리포트 날짜'가 '2025-10-28'처럼 특정 날짜로 주어지더라도, **"2025년 10월 28일 기준으로"처럼 기계적으로 말하지 마세요.** 대신 "10월 말", "최근", "10월 한 달간의"처럼 사람이 말하듯 자연스러운 기간으로 표현해 주세요.
+-   **섹션 구분 금지:** '1. 도입', '2. 강점 요약' 같은 숫자나 제목, 섹션 구분을 절대로 명시하지 마세요. 마치 선생님이 직접 작성한 편지처럼, 모든 내용이 물 흐르듯 자연스럽게 이어져야 합니다.
+
+**리포트의 자연스러운 흐름 (이 흐름을 10줄 내외로 압축):**
+* **(도입 흐름):** 학부모님께 정중하게 인사하고, 리포트의 목적을 자연스럽게 설명합니다. (예: 소선이 어머님/아버님, 인재원 영어 담당 교사입니다. 최근 소선이의 성취도와 학습 태도에 대해 말씀드리고자 합니다.)
+* **(강점 요약 흐름):** 학생의 강점을 간결하게 요약합니다.
+* **(핵심 성장 영역 흐름):** 보완이 필요한 부분을 '성장 영역'으로 긍정적으로 짚어줍니다.
+* **(실행 계획 흐름):** 이 '성장 영역'을 위해 어떻게 지도할 것인지 간략히 제시합니다.
+* **(마무리 흐름):** 긍정적인 격려의 말로 마무리합니다.`;
+
+            let userQuery = `다음은 ${studentName} 학생의 ${reportDate} 기준 리포트 데이터입니다.\n\n`;
+            userQuery += "**영어 점수:**\n" + JSON.stringify(scores) + "\n\n";
+            userQuery += "**학습 태도 및 역량:**\n" + JSON.stringify(characteristics) + "\n\n";
+            userQuery += "이 데이터를 바탕으로, 위 시스템 프롬프트의 모든 규칙을 준수하여 학부모님께 보낼 리포트 본문만 작성해 주세요.";
+
+            // 4. API 호출
+            try {
+                const generatedText = await callGeminiAPI(systemPrompt, userQuery);
+                // 5. 리포트 뷰 표시
+                showReportView(generatedText, studentName, reportDate);
+            } catch (error) {
+                console.error("AI 생성 실패:", error);
+                showError("리포트 생성에 실패했습니다. " + error.message);
+            } finally {
+                // 6. 로딩 상태 종료
+                setLoading(false);
+            }
+        }
+
+        // --- Gemini API 호출 함수 ---
+        async function callGeminiAPI(systemPrompt, userQuery) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${globalApiKey}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: userQuery }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.9,
+                    topK: 40
+                }
+            };
+
+            let response;
+            let retries = 3;
+            let delay = 1000;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                            return result.candidates[0].content.parts[0].text.trim();
+                        } else {
+                            throw new Error("AI로부터 유효한 응답을 받
