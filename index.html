@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>인재원 영어 학생 리포트 (v5.2)</title> 
+    <title>인재원 영어 학생 리포트</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -12,43 +12,44 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', 'Noto Sans KR', sans-serif;
-            background-color: #f4f7f6;
-        }
-        .flatpickr-calendar {
-            font-family: 'Noto Sans KR', sans-serif;
-        }
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
+        .flatpickr-calendar { font-family: 'Noto Sans KR', sans-serif; }
         @media print {
-            body {
-                background-color: #ffffff;
-            }
-            #input-section, #report-buttons {
-                display: none !important;
-            }
-            #report-view {
-                display: block !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                max-width: 100% !important;
-                border: none !important;
-            }
+            body { background-color: #ffffff; }
+            #input-section, #report-buttons, #report-header-icon { display: none !important; }
+            #report-view { display: block !important; box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; padding: 1rem !important; }
+            .report-card { box-shadow: none !important; border: 1px solid #e5e7eb; margin-bottom: 1rem !important;}
+            .report-card h3 svg { display: none !important; }
+             #report-header { margin-bottom: 1rem !important; }
         }
+        textarea { resize: none; overflow-y: hidden; }
+        .report-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .report-card h3 { display: flex; align-items: center; font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.75rem; }
+         .report-card h3 svg { width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; color: #4f46e5; }
+        .report-card p, .report-card ul li { font-size: 0.95rem; color: #4b5563; line-height: 1.6; white-space: pre-wrap; }
+        .report-card ul { list-style-type: none; padding-left: 0; }
+        .report-card ul li { position: relative; padding-left: 1.25rem; margin-bottom: 0.25rem; }
+         .report-card ul li::before { content: "✓"; position: absolute; left: 0; color: #4f46e5; font-weight: bold; }
+         #report-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
+         #report-header svg { width: 2.5rem; height: 2.5rem; color: #4f46e5; margin: 0 auto 0.5rem auto; }
+         #report-header h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; }
+         #report-header p { font-size: 0.875rem; color: #6b7280; }
+         label .required-star { color: #ef4444; margin-left: 2px; }
+         .error-highlight { border-color: #ef4444 !important; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- =========== 1. 교사 편집 화면 =========== -->
     <div id="input-section">
         <div class="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-8">
             <div class="text-center">
                 <h1 class="text-3xl font-bold text-indigo-700">인재원 영어 학생 리포트</h1>
                 <p class="mt-2 text-lg text-gray-600">학생 데이터를 기반으로 학부모님께 전달할 상세 리포트를 생성합니다.</p>
             </div>
-
+            
             <div class="space-y-4 p-4 bg-gray-100 rounded-lg">
                 <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-gray-500 pl-3">0. API 키 설정 (최초 1회)</h2>
-                <p class="text-sm text-gray-600">이 프로그램을 다른 환경에서 사용하려면 Google AI Studio에서 발급받은 API 키가 필요합니다. 입력된 키는 이 브라우저에만 저장됩니다.</p>
+                <p class="text-sm text-gray-600">AI 자동 생성을 사용하려면 Google AI Studio에서 발급받은 API 키가 필요합니다. 입력된 키는 이 브라우저에만 저장됩니다.</p>
                 <div>
                     <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Google AI API Key</label>
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -67,21 +68,17 @@
                 <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">1. 기본 정보</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">학생 이름</label>
+                        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">학생 이름<span class="required-star">*</span></label>
                         <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="예: 김소선">
                     </div>
                     <div>
                         <label for="parentSelect" class="block text-sm font-medium text-gray-700 mb-1">리포트 받으시는 분</label>
                         <select id="parentSelect" class="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="부모님께">부모님께</option>
-                            <option value="어머님께">어머님께</option>
-                            <option value="아버님께">아버님께</option>
-                            <option value="할머님께">할머님께</option>
-                            <option value="할아버님께">할아버님께</option>
+                            <option value="부모님께">부모님께</option> <option value="어머님께">어머님께</option> <option value="아버님께">아버님께</option> <option value="할머님께">할머님께</option> <option value="할아버님께">할아버님께</option>
                         </select>
                     </div>
                     <div>
-                        <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-1">리포트 날짜</label>
+                        <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-1">리포트 날짜<span class="required-star">*</span></label>
                         <input type="text" id="reportDate" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="날짜 선택">
                     </div>
                 </div>
@@ -92,139 +89,48 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <label for="scoreListening" class="block text-sm font-medium text-gray-700 mb-1">듣기 (L/C)</label>
-                        <input type="number" id="scoreListening" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="85" value="85">
+                        <input type="number" id="scoreListening" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="85">
                     </div>
                     <div>
                         <label for="scoreReading" class="block text-sm font-medium text-gray-700 mb-1">독해 (R/C)</label>
-                        <input type="number" id="scoreReading" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="90" value="90">
+                        <input type="number" id="scoreReading" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="90">
                     </div>
                     <div>
                         <label for="scoreGrammar" class="block text-sm font-medium text-gray-700 mb-1">문법 (Grammar)</label>
-                        <input type="number" id="scoreGrammar" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="75" value="75">
+                        <input type="number" id="scoreGrammar" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="75">
                     </div>
                     <div>
                         <label for="scoreVocab" class="block text-sm font-medium text-gray-700 mb-1">어휘 (Voca)</label>
-                        <input type="number" id="scoreVocab" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="95" value="95">
+                        <input type="number" id="scoreVocab" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="95">
                     </div>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
-                    <canvas id="scoreChartInput"></canvas>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">3. 학습 태도 및 역량</h2>
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">3. 학습 태도 및 역량 (AI 코멘트 생성용)</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div class="space-y-1">
-                        <label for="select-participation" class="text-sm font-medium text-gray-700">수업 참여도</label>
-                        <select id="select-participation" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (적극적 발표, 주도적 참여)</option>
-                            <option value="우수">우수 (성실히 참여, 긍정적 반응)</option>
-                            <option value="보통">보통 (대체로 참여하나 기복이 있음)</option>
-                            <option value="개선 필요">개선 필요 (다소 소극적, 참여 독려 필요)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-engagement" class="text-sm font-medium text-gray-700">수업 몰입도</label>
-                        <select id="select-engagement" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (높은 집중력, 수업 내용 완전 흡수)</option>
-                            <option value="우수">우수 (대부분의 시간 집중, 교사 지시 잘 따름)</option>
-                            <option value="보통">보통 (가끔 멍하거나 주의가 산만해짐)</option>
-                            <option value="개선 필요">개선 필요 (집중 시간이 짧음, 주변 자극에 민감)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-attitude" class="text-sm font-medium text-gray-700">학습 태도</label>
-                        <select id="select-attitude" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (열정적, 긍정적, 배우려는 의지 높음)</option>
-                            <option value="우수">우수 (성실하고 꾸준함, 예의 바름)</option>
-                            <option value="보통">보통 (태도의 기복이 있음, 동기부여 필요)</option>
-                            <option value="개선 필요">개선 필요 (다소 수동적이거나 불성실할 때가 있음)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-diligence" class="text-sm font-medium text-gray-700">성실함 (숙제/출결)</label>
-                        <select id="select-diligence" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (숙제 완성도 높음, 지각/결석 없음)</option>
-                            <option value="우수">우수 (대부분 성실히 이행, 가끔 누락)</option>
-                            <option value="보통">보통 (숙제 마감일에 닥쳐서 하거나 완성도 부족)</option>
-                            <option value="개선 필요">개선 필요 (숙제 누락/지각 빈번, 관리 필요)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-proactiveness" class="text-sm font-medium text-gray-700">주도성 (질문/탐구)</label>
-                        <select id="select-proactiveness" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (스스로 질문 찾음, 호기심 높음)</option>
-                            <option value="우수">우수 (이해 안되는 부분 질문, 추가 자료 요청)</option>
-                            <option value="보통">보통 (질문 있으나 망설임, 교사가 유도해야 함)</option>
-                            <option value="개선 필요">개선 필요 (질문 거의 없음, 수동적 학습)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-collaboration" class="text-sm font-medium text-gray-700">또래와의 협업 능력</label>
-                        <select id="select-collaboration" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (리더십 발휘, 친구 의견 경청 및 조율)</option>
-                            <option value="우수">우수 (협조적, 자기 역할 충실히 이행)</option>
-                            <option value="보통">보통 (참여는 하나 주도적이거나 적극적이진 않음)</option>
-                            <option value="개선 필요">개선 필요 (협업에 어려움, 개인 활동 선호)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-concept" class="text-sm font-medium text-gray-700">개념 성취도</label>
-                        <select id="select-concept" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (개념 이해 깊고 응용력 높음)</option>
-                            <option value="우수">우수 (개념 잘 이해하고 문제 풀이 정확)</option>
-                            <option value="보통">보통 (개념은 아나 응용에 시간 걸림)</option>
-                            <option value="개선 필요">개선 필요 (기본 개념 혼동, 반복 학습 필요)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-problemSolving" class="text-sm font-medium text-gray-700">문제 해결 능력</label>
-                        <select id="select-problemSolving" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (논리적, 복잡한 문제도 스스로 해결 시도)</option>
-                            <option value="우수">우수 (배운 개념 활용하여 문제 잘 해결)</option>
-                            <option value="보통">보통 (익숙한 유형은 잘 푸나 신유형 어려워함)</option>
-                            <option value="개선 필요">개선 필요 (문제 해결에 힌트/도움 많이 필요)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-perseverance" class="text-sm font-medium text-gray-700">문제에 대한 끈기</label>
-                        <select id="select-perseverance" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (어려운 문제도 포기하지 않고 매달림)</option>
-                            <option value="우수">우수 (시간이 걸려도 끝까지 풀려고 노력함)</option>
-                            <option value="보통">보통 (어려우면 쉽게 포기하거나 질문함)</option>
-                            <option value="개선 필요">개선 필요 (고난도 문제 회피 경향)</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1">
-                        <label for="select-criticalThinking" class="text-sm font-medium text-gray-700">비판적 사고</label>
-                        <select id="select-criticalThinking" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="">선택 안함</option>
-                            <option value="매우 우수">매우 우수 (다각도로 생각, '왜?'라는 질문을 함)</option>
-                            <option value="우수">우수 (정보를 그대로 받아들이지 않고 검토함)</option>
-                            <option value="보통">보통 (교사의 유도가 있을 시 비판적 사고 가능)</option>
-                            <option value="개선 필요">개선 필요 (주어진 정보 수용에 익숙)</option>
-                        </select>
-                    </div>
+                    <div class="space-y-1"><label for="select-participation" class="text-sm font-medium text-gray-700">수업 참여도</label><select id="select-participation" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-engagement" class="text-sm font-medium text-gray-700">수업 몰입도</label><select id="select-engagement" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-attitude" class="text-sm font-medium text-gray-700">학습 태도</label><select id="select-attitude" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-diligence" class="text-sm font-medium text-gray-700">성실함 (과제/출결)</label><select id="select-diligence" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-proactiveness" class="text-sm font-medium text-gray-700">주도성 (질문/탐구)</label><select id="select-proactiveness" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-collaboration" class="text-sm font-medium text-gray-700">또래와의 협업 능력</label><select id="select-collaboration" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-concept" class="text-sm font-medium text-gray-700">개념 성취도</label><select id="select-concept" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-problemSolving" class="text-sm font-medium text-gray-700">문제 해결능력</label><select id="select-problemSolving" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-perseverance" class="text-sm font-medium text-gray-700">문제에 대한 끈기</label><select id="select-perseverance" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
+                    <div class="space-y-1"><label for="select-criticalThinking" class="text-sm font-medium text-gray-700">비판적 사고</label><select id="select-criticalThinking" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm"><option value="">선택 안함</option><option value="매우 우수">매우 우수</option><option value="우수">우수</option><option value="보통">보통</option><option value="개선 필요">개선 필요</option></select></div>
                 </div>
             </div>
 
+             <div class="space-y-4">
+                 <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">4. 선생님 추가 전달사항</h2>
+                 <textarea id="teacherComment" rows="3" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="AI 생성 코멘트 외에 추가로 전달할 내용이 있다면 여기에 작성해주세요."></textarea>
+             </div>
+
             <div class="pt-6 border-t">
                 <button id="generateButton" class="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 ease-in-out flex items-center justify-center">
-                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span id="buttonText">리포트 생성하기</span>
+                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span id="buttonText">리포트 생성하기</span> 
                 </button>
             </div>
             
@@ -234,56 +140,81 @@
     </div>
 
     <div id="report-view" class="hidden">
-        <div class="max-w-4xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border border-gray-100" style="font-family: 'Noto Sans KR', sans-serif;">
+        <div class="max-w-2xl mx-auto p-6 md:p-8 bg-gray-50 rounded-lg" style="font-family: 'Noto Sans KR', sans-serif;">
             
-            <div id="report-buttons" class="mb-8 flex flex-col sm:flex-row gap-2 print:hidden">
-                <button id="editButton" class="w-full sm:w-auto flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200">
-                    내용 수정하기
-                </button>
-                <button id="printButton" class="w-full sm:w-auto flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-200">
-                    인쇄하기 (PDF 저장)
-                </button>
+            <div id="report-buttons" class="mb-6 flex flex-col sm:flex-row gap-2 print:hidden">
+                <button id="editButton" class="w-full sm:w-auto flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200 text-sm">내용 수정하기</button>
+                <button id="printButton" class="w-full sm:w-auto flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-200 text-sm">인쇄하기 (PDF 저장)</button>
             </div>
 
-            <div class="text-center mb-10">
-                <h1 class="text-3xl font-bold text-indigo-700">인재원 영어 학생 리포트</h1>
-                <p id="report-date-display" class="mt-2 text-lg text-gray-600"></p>
+            <div id="report-header" class="text-center mb-8 pt-4">
+                 <svg id="report-header-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-indigo-600 mx-auto mb-2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+                <h1 id="report-student-name-header" class="text-xl font-semibold text-gray-800"></h1>
+                <p id="report-date-header" class="text-sm text-gray-500"></p>
             </div>
 
-            <div class="mb-8 p-6 bg-indigo-50 rounded-lg">
-                <h2 id="report-student-name" class="text-2xl font-semibold text-gray-800"></h2>
-            </div>
-
-            <div class="space-y-6">
-                <h3 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">종합 코멘트</h3>
-                <div id="report-content" class="text-base md:text-lg leading-relaxed text-gray-700 whitespace-pre-wrap" style="line-height: 1.8;">
-                </div>
-            </div>
-
-            <hr class="my-10">
-
-            <div class="space-y-6">
-                <h3 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">영어 영역별 성취도</h3>
-                <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+            <div class="report-card">
+                <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25A1.125 1.125 0 0 1 9.75 21V8.625Zm5.625-1.5c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v13.5c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V7.125Z" /></svg> 영어 영역별 점수</h3>
+                <ul id="report-score-list" class="space-y-1 mb-4"></ul> 
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg shadow-inner chart-container-output" style="height: 200px;">
                     <canvas id="scoreChartOutput"></canvas>
                 </div>
             </div>
+
+             <div id="teacher-comment-card" class="report-card hidden">
+                 <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg> 선생님 추가 전달사항</h3>
+                 <p id="report-teacher-comment-display"></p>
+             </div>
+
+            <div class="report-card">
+                <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.722.06c-.247.007-.48.118-.634.306l-2.48 2.986a.75.75 0 0 1-1.284 0l-2.48-2.986a1.861 1.861 0 0 0-.634-.306l-3.722-.06A2.25 2.25 0 0 1 3 16.886V12.6c0-.97.616-1.813 1.5-2.097m15.75 0c.884-.284 1.5-1.128 1.5-2.097V6.314a2.25 2.25 0 0 0-2.25-2.25h-9a2.25 2.25 0 0 0-2.25 2.25v.984c0 .97-.616 1.813-1.5 2.097M15.75 0C11.765 0 8.5 3.582 8.5 8c0 .408.024.81.07 1.206l-4.273 4.273a.75.75 0 0 1-1.06-1.06L7.157 8.57A8.001 8.001 0 0 1 15.75 0Z" /></svg> 전하는 말</h3>
+                <p id="report-comment-display"></p>
+            </div>
             
-            <div class="mt-12 pt-6 border-t text-center text-gray-500 text-sm">
+            <div class="mt-8 pt-4 border-t border-gray-200 text-center text-gray-500 text-xs">
                 <p>본 리포트는 인재원 영어에서 학생의 성장을 돕기 위해 정성껏 작성되었습니다.</p>
                 <p class="font-semibold mt-1">인재원 영어</p>
             </div>
         </div>
     </div>
 
-
     <script>
         let globalApiKey = ""; 
-        let inputChartInstance = null;
         let outputChartInstance = null;
         let chartDataStore = {};
         
         let isInitialized = false; 
+        let isGenerating = false; 
+        
+        function autoGrowTextarea(element) {
+             if (!element) return;
+            element.style.height = 'auto';
+            element.style.height = (element.scrollHeight) + 'px';
+        }
+
+        function getDayOfWeek(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const dayIndex = date.getUTCDay(); 
+                return days[dayIndex];
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function formatFullDateString(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const year = date.getUTCFullYear();
+                const month = date.getUTCMonth() + 1;
+                const day = date.getUTCDate();
+                const dayOfWeek = getDayOfWeek(dateStr);
+                return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`; 
+            } catch (e) {
+                return dateStr; 
+            }
+        }
 
         function initializeApp() {
             if (isInitialized) return; 
@@ -294,11 +225,12 @@
             const studentNameInput = document.getElementById('studentName');
             const reportDateInput = document.getElementById('reportDate');
             const parentSelect = document.getElementById('parentSelect'); 
+            const teacherCommentInput = document.getElementById('teacherComment'); 
             
-            const scoreListening = document.getElementById('scoreListening');
-            const scoreReading = document.getElementById('scoreReading');
-            const scoreGrammar = document.getElementById('scoreGrammar');
-            const scoreVocab = document.getElementById('scoreVocab');
+            const scoreListeningInput = document.getElementById('scoreListening');
+            const scoreReadingInput = document.getElementById('scoreReading');
+            const scoreGrammarInput = document.getElementById('scoreGrammar');
+            const scoreVocabInput = document.getElementById('scoreVocab');
             
             const generateButton = document.getElementById('generateButton');
             const buttonText = document.getElementById('buttonText');
@@ -308,14 +240,17 @@
             const editButton = document.getElementById('editButton');
             const printButton = document.getElementById('printButton');
             
-            const reportStudentName = document.getElementById('report-student-name');
-            const reportDateDisplay = document.getElementById('report-date-display');
-            const reportContent = document.getElementById('report-content');
+            const reportStudentNameHeader = document.getElementById('report-student-name-header');
+            const reportDateHeader = document.getElementById('report-date-header');
+            const reportScoreList = document.getElementById('report-score-list'); 
+            const reportTeacherCommentCard = document.getElementById('teacher-comment-card'); 
+            const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display'); 
+            const reportCommentDisplay = document.getElementById('report-comment-display');
             
             const apiKeyInput = document.getElementById('apiKeyInput');
             const saveApiKey = document.getElementById('saveApiKey');
             const apiKeyStatus = document.getElementById('apiKeyStatus');
-            
+
             const selectElements = document.querySelectorAll('select[id^="select-"]');
 
             try {
@@ -331,43 +266,28 @@
             
             loadKeyFromStorage(apiKeyInput, apiKeyStatus); 
 
-            updateChartData(scoreListening, scoreReading, scoreGrammar, scoreVocab);
-            renderInputChart();
-
-            [scoreListening, scoreReading, scoreGrammar, scoreVocab].forEach(input => {
-                input.addEventListener('input', () => {
-                    updateChartData(scoreListening, scoreReading, scoreGrammar, scoreVocab);
-                    renderInputChart();
-                });
-            });
+            if (teacherCommentInput) { 
+                 teacherCommentInput.addEventListener('input', () => autoGrowTextarea(teacherCommentInput));
+                 autoGrowTextarea(teacherCommentInput); 
+            }
 
             if (generateButton) {
-                // --- 핵심 수정 ---
-                // handleGenerateReport 함수가 직접 참조되지 않도록 익명 함수로 감쌉니다.
-                // 이렇게 하면 이벤트 리스너가 중복 등록되더라도, 
-                // handleGenerateReport 내부 로직은 단 한 번만 호출됩니다.
-                generateButton.addEventListener('click', () => {
-                    console.log("Generate button clicked - listener attached"); // 리스너 부착 확인 로그
-                    handleGenerateReport(
-                        apiKeyInput, studentNameInput, reportDateInput, parentSelect, 
-                        scores = {
-                            "듣기": scoreListening.value || 0,
-                            "독해": scoreReading.value || 0,
-                            "문법": scoreGrammar.value || 0,
-                            "어휘": scoreVocab.value || 0
-                        },
-                        selectElements,
-                        errorMessage,
-                        generateButton, buttonText, loadingSpinner
-                    );
-                });
+                generateButton.addEventListener('click', () => handleGenerateReport( 
+                    apiKeyInput, 
+                    studentNameInput, reportDateInput, parentSelect, 
+                    scoreListeningInput, scoreReadingInput, scoreGrammarInput, scoreVocabInput,
+                    teacherCommentInput, 
+                    selectElements,
+                    errorMessage,
+                    generateButton, buttonText, loadingSpinner
+                ));
             } else {
                  console.error("generateButton not found.");
             }
             
             if (editButton) {
                 editButton.addEventListener('click', () => showInputView(
-                    reportView, inputSection, scoreListening, scoreReading, scoreGrammar, scoreVocab
+                    reportView, inputSection, teacherCommentInput
                 ));
             } else {
                  console.error("editButton not found.");
@@ -390,107 +310,67 @@
                     if(apiKeyStatus) apiKeyStatus.classList.add('hidden'); 
                 });
             }
-
+            
             isInitialized = true; 
             console.log("Initialization complete."); 
-        }
-
-        function updateChartData(scoreListening, scoreReading, scoreGrammar, scoreVocab) {
-            chartDataStore = {
-                labels: ['듣기 (L/C)', '독해 (R/C)', '문법 (Grammar)', '어휘 (Voca)'],
-                datasets: [{
-                    label: '영역별 점수',
-                    data: [
-                        parseInt(scoreListening.value) || 0,
-                        parseInt(scoreReading.value) || 0,
-                        parseInt(scoreGrammar.value) || 0,
-                        parseInt(scoreVocab.value) || 0
-                    ],
-                    backgroundColor: [
-                        'rgba(79, 70, 229, 0.6)', 
-                        'rgba(59, 130, 246, 0.6)',
-                        'rgba(16, 185, 129, 0.6)',
-                        'rgba(234, 179, 8, 0.6)'  
-                    ],
-                    borderColor: [
-                        'rgba(79, 70, 229, 1)',
-                        'rgba(59, 130, 246, 1)',
-                        'rgba(16, 185, 129, 1)',
-                        'rgba(234, 179, 8, 1)'
-                    ],
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            };
         }
 
         const chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        font: {
-                            family: "'Noto Sans KR', sans-serif",
-                            size: 14,
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: {
-                            family: "'Noto Sans KR', sans-serif",
-                            size: 14,
-                        }
-                    }
-                }
+                y: { beginAtZero: true, max: 100, ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } }, 
+                x: { ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } } 
             },
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     enabled: true,
-                    bodyFont: {
-                        font: {
-                            family: "'Noto Sans KR', sans-serif"
-                        }
-                    },
-                    titleFont: {
-                        font: {
-                            family: "'Noto Sans KR', sans-serif"
-                        }
-                    }
+                    bodyFont: { font: { family: "'Noto Sans KR', sans-serif" } },
+                    titleFont: { font: { family: "'Noto Sans KR', sans-serif" } }
                 }
             }
         };
-
-        function renderInputChart() {
-            try {
-                const ctx = document.getElementById('scoreChartInput').getContext('2d'); 
-                if (inputChartInstance) {
-                    inputChartInstance.data = chartDataStore;
-                    inputChartInstance.update();
-                } else {
-                    inputChartInstance = new Chart(ctx, {
-                        type: 'bar',
-                        data: chartDataStore,
-                        options: chartOptions
-                    });
-                }
-            } catch (e) {
-                console.error("Input chart render failed:", e);
-            }
-        }
         
-        function renderOutputChart() {
+        function renderOutputChart(scores) { 
             try {
                 const ctx = document.getElementById('scoreChartOutput').getContext('2d');
-                if (outputChartInstance) {
-                    outputChartInstance.destroy();
-                }
+                if (!ctx) { console.error("scoreChartOutput canvas not found."); return; }
+                
+                if (outputChartInstance) { outputChartInstance.destroy(); }
+
+                const labels = ['듣기', '독해', '문법', '어휘'];
+                const data = [
+                    scores['듣기'] || 0,
+                    scores['독해'] || 0,
+                    scores['문법'] || 0,
+                    scores['어휘'] || 0
+                ];
+                const backgroundColors = [
+                    'rgba(79, 70, 229, 0.6)', 
+                    'rgba(59, 130, 246, 0.6)', 
+                    'rgba(16, 185, 129, 0.6)', 
+                    'rgba(234, 179, 8, 0.6)'
+                ];
+                const borderColors = [
+                    'rgba(79, 70, 229, 1)', 
+                    'rgba(59, 130, 246, 1)', 
+                    'rgba(16, 185, 129, 1)', 
+                    'rgba(234, 179, 8, 1)'
+                ];
+
+                chartDataStore = {
+                    labels: labels, 
+                    datasets: [{
+                        label: '점수', 
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                };
+                
                 outputChartInstance = new Chart(ctx, {
                     type: 'bar',
                     data: chartDataStore, 
@@ -501,49 +381,77 @@
             }
         }
 
-        function showInputView(reportView, inputSection, scoreListening, scoreReading, scoreGrammar, scoreVocab) {
+        function showInputView(reportView, inputSection, teacherCommentInput) { 
             reportView.classList.add('hidden');
             inputSection.classList.remove('hidden');
-            if (!inputChartInstance || !inputChartInstance.ctx) {
-                renderInputChart();
-            } else {
-                updateChartData(scoreListening, scoreReading, scoreGrammar, scoreVocab);
-                inputChartInstance.data = chartDataStore;
-                inputChartInstance.update();
-            }
+            autoGrowTextarea(teacherCommentInput); 
         }
 
-        function showReportView(reportText, studentName, reportDate) {
+        function showReportView(generatedComment, teacherComment, 
+                                studentName, reportDate, 
+                                scores) { 
             const reportView = document.getElementById('report-view');
             const inputSection = document.getElementById('input-section');
-            const reportStudentName = document.getElementById('report-student-name');
-            const reportDateDisplay = document.getElementById('report-date-display');
-            const reportContent = document.getElementById('report-content');
+            const reportStudentNameHeader = document.getElementById('report-student-name-header');
+            const reportDateHeader = document.getElementById('report-date-header');
+            const reportScoreList = document.getElementById('report-score-list');
+            const reportTeacherCommentCard = document.getElementById('teacher-comment-card');
+            const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display');
+            const reportCommentDisplay = document.getElementById('report-comment-display');
+            const scoreSection = document.getElementById('report-score-list').closest('.report-card'); 
 
-            reportStudentName.textContent = `${studentName} 학생`;
-            reportDateDisplay.textContent = `${formatDateString(reportDate)} 리포트`;
-            reportContent.textContent = reportText;
-            renderOutputChart();
+            reportStudentNameHeader.textContent = studentName;
+            reportDateHeader.textContent = formatFullDateString(reportDate); 
+            
+            reportScoreList.innerHTML = ''; 
+            const scoreLabels = {'듣기': '듣기 (L/C)', '독해': '독해 (R/C)', '문법': '문법 (Grammar)', '어휘': '어휘 (Voca)'};
+            let hasScores = false;
+            Object.keys(scores).forEach(key => {
+                 if (scores[key] !== null && scores[key] !== undefined && scores[key] !== '') {
+                     const listItem = document.createElement('li');
+                     listItem.textContent = `${scoreLabels[key] || key}: ${scores[key]}점`;
+                     reportScoreList.appendChild(listItem);
+                     hasScores = true;
+                 }
+            });
+
+            if (hasScores) {
+                 scoreSection.style.display = 'block'; 
+                 renderOutputChart(scores); 
+            } else {
+                 scoreSection.style.display = 'none'; 
+                 if (outputChartInstance) {
+                     outputChartInstance.destroy(); 
+                     outputChartInstance = null; 
+                 }
+            }
+            
+            if (teacherComment && teacherComment.trim() !== '') {
+                 reportTeacherCommentDisplay.textContent = teacherComment;
+                 reportTeacherCommentCard.classList.remove('hidden');
+            } else {
+                 reportTeacherCommentDisplay.textContent = '';
+                 reportTeacherCommentCard.classList.add('hidden');
+            }
+
+            reportCommentDisplay.textContent = generatedComment || "(코멘트 생성 실패)"; 
+            
             inputSection.classList.add('hidden');
             reportView.classList.remove('hidden');
             window.scrollTo(0, 0); 
         }
 
-        // --- 핵심 수정 ---
-        // handleGenerateReport 함수 내부에 isGenerating 플래그를 추가하여
-        // API 호출이 진행 중일 때 다시 호출되는 것을 막습니다.
-        let isGenerating = false; 
-
-        async function handleGenerateReport(
+        async function handleGenerateReport( 
             apiKeyInput, studentNameInput, reportDateInput, parentSelect, 
-            scores, selectElements, errorMessage,
+            scoreListeningInput, scoreReadingInput, scoreGrammarInput, scoreVocabInput,
+            teacherCommentInput,
+            selectElements,
+            errorMessage,
             generateButton, buttonText, loadingSpinner
         ) {
-            console.log("handleGenerateReport called. isGenerating:", isGenerating); // 호출 및 플래그 상태 로그
-            
-            // 이미 생성 중이면 함수 종료 (중복 실행 방지)
+            console.log("handleGenerateReport called"); 
             if (isGenerating) {
-                 console.log("Generation already in progress. Exiting.");
+                 console.log("Generation already in progress.");
                  return; 
             }
 
@@ -556,23 +464,68 @@
             const studentName = studentNameInput.value.trim();
             const reportDate = reportDateInput.value;
             const parentName = parentSelect.value; 
+            const teacherComment = teacherCommentInput.value.trim();
+
+            const scores = {
+                 '듣기': scoreListeningInput.value.trim(),
+                 '독해': scoreReadingInput.value.trim(),
+                 '문법': scoreGrammarInput.value.trim(),
+                 '어휘': scoreVocabInput.value.trim()
+            };
+
+            studentNameInput.classList.remove('error-highlight');
+            reportDateInput.classList.remove('error-highlight');
+            [scoreListeningInput, scoreReadingInput, scoreGrammarInput, scoreVocabInput].forEach(input => {
+                 input.classList.remove('error-highlight');
+            });
+
 
             if (!studentName) {
-                showError("학생 이름을 입력해 주세요.", errorMessage);
+                showError("학생 이름을 입력해주세요.", errorMessage);
                 studentNameInput.focus();
+                studentNameInput.classList.add('error-highlight');
                 return;
             }
             if (!reportDate) {
-                showError("리포트 날짜를 선택해 주세요.", errorMessage);
+                showError("리포트 날짜를 입력해주세요.", errorMessage);
                 reportDateInput.focus();
+                reportDateInput.classList.add('error-highlight');
                 return;
             }
 
-            // 생성 시작 플래그 설정
-            isGenerating = true; 
-            setLoading(true, generateButton, buttonText, loadingSpinner, errorMessage);
+            let hasInvalidScore = false;
+            Object.keys(scores).forEach(key => {
+                 const score = scores[key];
+                 const inputElement = document.getElementById(`score${key.charAt(0).toUpperCase() + key.slice(1).toLowerCase().replace('문법','Grammar').replace('어휘','Vocab').replace('듣기','Listening').replace('독해','Reading')}`); // Get the corresponding input element
+                 if (score !== '' && (isNaN(parseInt(score)) || parseInt(score) < 0 || parseInt(score) > 100)) {
+                     showError(`${key} 점수는 0과 100 사이의 숫자여야 합니다.`, errorMessage);
+                     if (inputElement) inputElement.focus();
+                     if (inputElement) inputElement.classList.add('error-highlight');
+                     hasInvalidScore = true;
+                 } else if (inputElement) {
+                      inputElement.classList.remove('error-highlight');
+                 }
+            });
+             if (hasInvalidScore) return;
 
-            let characteristics = [];
+             // Convert empty strings to null for processing, keep valid numbers
+             const processedScores = {};
+             let hasAnyScore = false;
+             Object.keys(scores).forEach(key => {
+                 const score = scores[key];
+                 if (score === '') {
+                     processedScores[key] = null;
+                 } else {
+                     processedScores[key] = parseInt(score);
+                     hasAnyScore = true; // Mark that at least one score exists
+                 }
+             });
+
+
+            setLoading(true, generateButton, buttonText, loadingSpinner, errorMessage);
+            isGenerating = true; 
+
+            let characteristics = []; 
             selectElements.forEach(select => {
                 if (select.value) {
                     const label = select.previousElementSibling.textContent;
@@ -583,45 +536,48 @@
                 }
             });
 
-            const systemPrompt = `당신은 '인재원 영어' 학원의 전문적이고 **학생에게 애정이 넘치는, 다정다감한** 선생님입니다.
-학부모님께 학생의 리포트를 전달하는 역할을 맡고 있습니다.
-제공되는 학생의 정량적(점수) 및 정성적(특성) 데이터를 바탕으로, 자연스러운 하나의 완성된 리포트를 한국어로 작성해 주세요.
+            const systemPrompt = `당신은 '인재원 영어' 학원의 전문적이고 학생에게 애정이 넘치는, 다정다감한 선생님입니다. 학부모님께 학생의 영어 학습 리포트를 전달하는 역할을 맡고 있습니다. 제공되는 학생의 영어 영역별 점수 (듣기, 독해, 문법, 어휘), 학습 태도, 그리고 선생님 추가 코멘트 데이터를 바탕으로, **[전하는 말]** 섹션에 들어갈 자연스러운 AI 코멘트만 한국어로 작성해 주세요. **매우 중요 (인간적인 톤 & 분량 & 내용):** - **사근사근한 말투:** 사무적이고 딱딱한 보고서 톤은 절대 금지합니다. 따뜻하고 사근사근한 말투를 사용해 주세요. "~했어요", "~하고 있어요" 같은 부드러운 종결어미를 선호합니다. - **친근한 호칭:** 학생 이름이 주어지면(예: 김소선), '소선 학생' 대신 "소선이가", "소선이의"처럼 친근하게 불러주세요. - **간결한 분량:** AI 코멘트는 **5~7 문장 내외로 간결하게** 핵심만 요약해 주세요. - **리포트 형식 준수:** 생성 내용은 오직 **[전하는 말]** 섹션의 AI 코멘트 본문입니다. 제목, 날짜, 점수 목록 등 다른 섹션 내용은 포함하지 마세요. 선생님 추가 코멘트도 AI 코멘트에 포함하지 마세요. - **학부모 호칭 사용 금지:** AI 코멘트 본문에는 부모님, 어머님 등의 호칭을 사용하지 마세요. - **기간 표현 금지:** 이 리포트는 **'오늘 하루'** 또는 특정 테스트에 대한 내용입니다. **'이번 주', '이번 달' 등 더 긴 기간 표현은 사용하지 마세요.** - **점수 분석:** 4개 영역(듣기, 독해, 문법, 어휘) 점수를 종합적으로 고려하여 강점과 보완점을 분석해주세요. 점수가 낮은 영역이 있다면 부드럽게 언급하고 격려해주세요. - **문단 나누기:** 내용상 구분이 필요하면 줄바꿈 문자(\`\\n\\n\`)를 사용하여 문단을 나누어 가독성을 높여주세요. **[전하는 말] 코멘트의 자연스러운 흐름:** * (칭찬) **오늘** 학생의 긍정적인 모습 (학습 태도, 특정 영역 점수 향상 등) 칭찬. * (성장 영역) **오늘** 보완이 필요한 부분 (학습 태도, 점수가 낮은 영역 등) 언급. * (지도 계획) 성장 영역을 돕기 위해 **앞으로** 어떻게 지도할지 간략히 제시. * (마무리) 학생 격려 및 학부모님께 감사 인사.`;
 
-**매우 중요 (인간적인 톤 & 분량):**
--   **사근사근한 말투:** **사무적이고 딱딱한 보고서 톤은 절대 금지**합니다. 마치 학생과 일대일로 대화하듯, **따뜻하고 사근사근한 말투**를 사용해 주세요. "입니다" 보다는 "~했어요", "~합니다" 보다는 "~하고 있어요" 같은 부드러운 종결어미를 선호합니다.
--   **친근한 호칭:** 학생 이름이 주어지면(예: 김소선), **'소선 학생'이라고 부르지 말고 "소선이가", "소선이의", "소선이는"처럼 친근하게 이름을 불러주세요.** 이것이 가장 중요합니다.
--   **간결한 분량:** 리포트 전체를 **10줄 내외로 매우 간결하게** 핵심만 요약해 주세요. 너무 길면 학부모님이 읽기 어렵습니다.
--   **날짜 표현:** '리포트 날짜'가 '2025-10-28'처럼 특정 날짜로 주어지더라도, **"2025년 10월 28일 기준으로"처럼 기계적으로 말하지 마세요.** 대신 "10월 말", "최근", "10월 한 달간의"처럼 사람이 말하듯 자연스러운 기간으로 표현해 주세요.
--   **섹션 구분 금지:** '1. 도입', '2. 강점 요약' 같은 숫자나 제목, 섹션 구분을 절대로 명시하지 마세요. 마치 선생님이 직접 작성한 편지처럼, 모든 내용이 물 흐르듯 자연스럽게 이어져야 합니다.
+            let userQuery = `다음은 ${studentName} 학생의 오늘(${reportDate}) 영어 학습 데이터입니다.\n\n`;
+            userQuery += `영어 영역별 점수:\n`;
+            if (hasAnyScore) {
+                Object.keys(processedScores).forEach(key => {
+                     if (processedScores[key] !== null) {
+                         userQuery += `- ${key}: ${processedScores[key]}점\n`;
+                     }
+                });
+            } else {
+                userQuery += `- 오늘 실시한 테스트가 없습니다.\n`;
+            }
+            userQuery += `\n`;
+            
+            userQuery += `학습 태도 및 역량:\n${JSON.stringify(characteristics)}\n\n`;
+            if (teacherComment) {
+                userQuery += `선생님 추가 전달사항 (참고용):\n${teacherComment}\n\n`;
+            }
+            userQuery += "이 데이터를 바탕으로, 위 시스템 프롬프트의 모든 규칙을 준수하여 **[전하는 말]** 섹션에 들어갈 **AI 코멘트 본문만** 작성해 주세요.";
 
-**리포트의 자연스러운 흐름 (이 흐름을 10줄 내외로 압축):**
-* **(도입 흐름):** \`[학생이름] [학부모 호칭]\` (예: \`소선이 어머님께,\`)으로 자연스럽게 시작하며 인사합니다. (예: 소선이 어머님께, 담당 교사입니다. 최근 소선이의 모습에 대해 말씀드리고자 합니다.)
-* **(강점 요약 흐름):** 학생의 강점을 간결하게 요약합니다.
-* **(핵심 성장 영역 흐름):** 보완이 필요한 부분을 '성장 영역'으로 긍정적으로 짚어줍니다.
-* **(실행 계획 흐름):** 이 '성장 영역'을 위해 어떻게 지도할 것인지 간략히 제시합니다.
-* **(마무리 흐름):** 긍정적인 격려의 말로 마무리합니다.`;
-
-            let userQuery = `다음은 ${studentName} 학생의 ${reportDate} 기준 리포트 데이터입니다.\n\n`;
-            userQuery += `**리포트 받으시는 분:** ${parentName}\n`; 
-            userQuery += `**영어 점수:**\n${JSON.stringify(scores)}\n\n`;
-            userQuery += `**학습 태도 및 역량:**\n${JSON.stringify(characteristics)}\n\n`;
-            userQuery += "이 데이터를 바탕으로, 위 시스템 프롬프트의 모든 규칙을 준수하여 학부모님께 보낼 리포트 본문만 작성해 주세요.";
 
             try {
-                const generatedText = await callGeminiAPI(systemPrompt, userQuery);
-                showReportView(generatedText, studentName, reportDate);
+                const generatedComment = await callGeminiAPI(systemPrompt, userQuery); 
+                showReportView(
+                    generatedComment, teacherComment, 
+                    studentName, reportDate, 
+                    processedScores 
+                );
             } catch (error) {
                 console.error("AI Generation Failed:", error);
                 showError("리포트 생성에 실패했습니다. " + error.message, errorMessage);
             } finally {
-                // 생성 완료 플래그 해제
-                isGenerating = false; 
                 setLoading(false, generateButton, buttonText, loadingSpinner, errorMessage);
-                console.log("Generation finished. isGenerating:", isGenerating); // 종료 로그
+                isGenerating = false; 
             }
         }
 
         async function callGeminiAPI(systemPrompt, userQuery) {
+             if (!globalApiKey) {
+                 throw new Error("API 키가 설정되지 않았습니다.");
+             }
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${globalApiKey}`;
             
             const payload = {
@@ -640,8 +596,6 @@
 
             let response;
             let retries = 3;
-             // --- 429 오류 완화 ---
-            // 초기 딜레이를 2초로 늘립니다.
             let delay = 2000; 
 
             for (let i = 0; i < retries; i++) {
@@ -659,8 +613,11 @@
                         const result = await response.json();
                         if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
                             return result.candidates[0].content.parts[0].text.trim();
+                        } else if (result.candidates && result.candidates[0].finishReason === "SAFETY") {
+                             throw new Error("콘텐츠 생성 중 안전상의 이유로 중단되었습니다. 입력 내용을 확인해주세요.");
                         } else {
-                            throw new Error("AI returned invalid response structure.");
+                            console.error("Unexpected API response structure:", result);
+                            throw new Error("AI로부터 유효한 응답을 받지 못했습니다. (응답 형식 오류)");
                         }
                     } else {
                         if (response.status === 429 || response.status >= 500) { 
@@ -669,7 +626,7 @@
                             await new Promise(resolve => setTimeout(resolve, delay));
                             delay *= 2; 
                         } else {
-                            const errorBody = await response.json();
+                            const errorBody = await response.json().catch(() => ({ error: { message: response.statusText } })); 
                             const errorMessage = errorBody.error?.message || response.statusText;
                             if (response.status === 401 || response.status === 403) {
                                 throw new Error(`API 키가 유효하지 않습니다. (오류: ${errorMessage})`);
@@ -677,6 +634,10 @@
                             if (errorMessage.includes("API has not been used") || errorMessage.includes("disabled")) {
                                 throw new Error(`API 사용 설정이 필요합니다. Google Cloud에서 'Generative Language API' 또는 'Vertex AI API'를 활성화(Enable)해주세요. (오류: ${errorMessage})`);
                             }
+                             if (response.status === 400) {
+                                 console.error("API Request Payload:", payload); 
+                                 throw new Error(`잘못된 요청입니다 (400 Bad Request). API 요청 내용을 확인해주세요. 오류: ${errorMessage}`);
+                             }
                             throw new Error(`API 오류: ${errorMessage}`);
                         }
                     }
@@ -690,44 +651,31 @@
             throw new Error("Failed to generate report after multiple retries.");
         }
 
+
         function setLoading(isLoading, generateButton, buttonText, loadingSpinner, errorMessage) {
             if (isLoading) {
                 generateButton.disabled = true;
-                buttonText.textContent = "리포트 생성 중입니다...";
+                buttonText.textContent = "AI가 생성 중입니다..."; 
                 loadingSpinner.classList.remove('hidden');
                 errorMessage.classList.add('hidden');
             } else {
                 generateButton.disabled = false;
-                buttonText.textContent = "리포트 생성하기";
+                buttonText.textContent = "리포트 생성하기"; 
                 loadingSpinner.classList.add('hidden');
             }
         }
 
         function showError(message, errorMessage) {
+             if (!errorMessage) return; 
             errorMessage.textContent = message;
             errorMessage.classList.remove('hidden');
         }
-
-        function formatDateString(dateStr) {
-            try {
-                const date = new Date(dateStr);
-                const offset = date.getTimezoneOffset() * 60000;
-                const correctedDate = new Date(date.getTime() + offset);
-                
-                const year = correctedDate.getFullYear();
-                const month = correctedDate.getMonth() + 1;
-                const day = correctedDate.getDate();
-                return `${year}년 ${month}월 ${day}일`;
-            } catch (e) {
-                return dateStr; 
-            }
-        }
-
+        
         function saveKeyToStorage(apiKeyInput, apiKeyStatus) {
             try {
                 const key = apiKeyInput.value.trim();
                 if (key && key.startsWith('AIza')) { 
-                    localStorage.setItem('injaewonApiKey_v3', key);
+                    localStorage.setItem('injaewonApiKey_english_v1', key); // 키 이름 변경
                     globalApiKey = key;
                     apiKeyStatus.textContent = 'API 키가 브라우저에 안전하게 저장되었습니다.';
                     apiKeyStatus.classList.remove('hidden', 'text-red-600');
@@ -748,7 +696,7 @@
 
         function loadKeyFromStorage(apiKeyInput, apiKeyStatus) {
             try {
-                const savedKey = localStorage.getItem('injaewonApiKey_v3');
+                const savedKey = localStorage.getItem('injaewonApiKey_english_v1'); // 키 이름 변경
                 if (savedKey) {
                     globalApiKey = savedKey;
                     apiKeyInput.value = '**********' + savedKey.slice(-4); 
@@ -756,7 +704,7 @@
                     apiKeyStatus.classList.remove('hidden', 'text-red-600');
                     apiKeyStatus.classList.add('text-green-600');
                 } else {
-                    apiKeyStatus.textContent = "Google AI Studio에서 발급받은 API 키를 입력 후 '키 저장하기'를 눌러주세요.";
+                    apiKeyStatus.textContent = "AI 자동 생성을 사용하려면 API 키를 입력 후 '키 저장하기'를 눌러주세요."; 
                     apiKeyStatus.classList.remove('hidden', 'text-green-600');
                     apiKeyStatus.classList.add('text-red-600');
                 }
@@ -772,4 +720,3 @@
     </script>
 </body>
 </html>
-
