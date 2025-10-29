@@ -16,7 +16,7 @@
         .flatpickr-calendar { font-family: 'Noto Sans KR', sans-serif; }
         @media print {
             body { background-color: #ffffff; }
-            #input-section, #report-buttons, #report-header-logo { display: none !important; } /* 로고도 인쇄 시 숨김 */
+            #input-section, #report-buttons, #report-header-logo { display: none !important; } 
             #report-view { display: block !important; box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; padding: 1rem !important; }
             .report-card { box-shadow: none !important; border: 1px solid #e5e7eb; margin-bottom: 1rem !important;}
             .report-card h3 svg { display: none !important; }
@@ -34,7 +34,7 @@
         .report-card ul li { position: relative; padding-left: 1.25rem; margin-bottom: 0.25rem; }
          .report-card ul li::before { content: "✓"; position: absolute; left: 0; color: #4f46e5; font-weight: bold; }
          #report-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
-         #report-header img { width: 4rem; height: 4rem; margin: 0 auto 1rem auto; } /* 로고 크기 및 위치 조정 */
+         #report-header img { width: 4rem; height: 4rem; margin: 0 auto 1rem auto; } 
          #report-header h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; }
          #report-header p { font-size: 0.875rem; color: #6b7280; }
          label .required-star { color: #ef4444; margin-left: 2px; }
@@ -44,6 +44,7 @@
 <body class="p-4 md:p-8">
 
     <div id="input-section">
+       
         <div class="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-8">
             <div class="text-center">
                 <h1 class="text-3xl font-bold text-indigo-700">인재원 수학 학생 리포트</h1>
@@ -177,7 +178,7 @@
             </div>
 
             <div id="report-header" class="text-center mb-8 pt-4">
-                 <img id="report-header-logo" src="YOUR_GITHUB_PAGES_LOGO_URL_HERE/academy_logo%20(circle).png" alt="학원 로고" class="w-16 h-16 mx-auto mb-4">
+                 <img id="report-header-logo" src="https://bigshol.github.io/report-generator/academy_logo%20(circle).png" alt="학원 로고" class="w-16 h-16 mx-auto mb-4">
                 <h1 id="report-student-name-header" class="text-xl font-semibold text-gray-800"></h1>
                 <p id="report-date-header" class="text-sm text-gray-500"></p>
             </div>
@@ -228,139 +229,37 @@
         let chartDataStore = {};
         let isInitialized = false; 
         let isGenerating = false; 
-        
-        function calculateScore(correct, total) {
-            if (!total || total <= 0) return 0;
-            const score = Math.round((correct / total) * 100);
-            return Math.max(0, Math.min(score, 100));
-        }
-        function autoGrowTextarea(element) {
-             if (!element) return;
-            element.style.height = 'auto';
-            element.style.height = (element.scrollHeight) + 'px';
-        }
-        function getDayOfWeek(dateStr) {
-            try {
-                const date = new Date(dateStr);
-                const days = ['일', '월', '화', '수', '목', '금', '토'];
-                const dayIndex = date.getUTCDay(); 
-                return days[dayIndex];
-            } catch (e) { return ''; }
-        }
-        function formatFullDateString(dateStr) {
-            try {
-                const date = new Date(dateStr);
-                const year = date.getUTCFullYear();
-                const month = date.getUTCMonth() + 1;
-                const day = date.getUTCDate();
-                const dayOfWeek = getDayOfWeek(dateStr);
-                return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`; 
-            } catch (e) { return dateStr; }
-        }
-        function updateScoreDisplay(testType) {
-             const totalInput = document.getElementById(`totalQ_${testType}`);
-             const correctInput = document.getElementById(`correctA_${testType}`);
-             const displayElement = document.getElementById(`scoreDisplay_${testType}`);
-             if(totalInput && correctInput && displayElement) {
-                 const total = parseInt(totalInput.value) || 0;
-                 const correct = parseInt(correctInput.value) || 0;
-                 totalInput.classList.remove('error-highlight'); 
-                 correctInput.classList.remove('error-highlight'); 
-                 if(total > 0 && correct >= 0 && correct <= total) {
-                     const score = calculateScore(correct, total);
-                     displayElement.textContent = `-> ${score}점 (${correct}/${total})`;
-                 } else if (total > 0 && (correct > total || correct < 0)) {
-                     displayElement.textContent = `-> (정답 수 확인 필요)`;
-                     correctInput.classList.add('error-highlight'); 
-                 } else if (total === 0 && correct > 0) {
-                      displayElement.textContent = `-> (총 문항 수 확인 필요)`;
-                      totalInput.classList.add('error-highlight'); 
-                 } else { displayElement.textContent = ""; }
-             }
-        }
+        function calculateScore(correct, total) { if (!total || total <= 0) return 0; const score = Math.round((correct / total) * 100); return Math.max(0, Math.min(score, 100)); }
+        function autoGrowTextarea(element) { if (!element) return; element.style.height = 'auto'; element.style.height = (element.scrollHeight) + 'px'; }
+        function getDayOfWeek(dateStr) { try { const date = new Date(dateStr); const days = ['일', '월', '화', '수', '목', '금', '토']; const dayIndex = date.getUTCDay(); return days[dayIndex]; } catch (e) { return ''; } }
+        function formatFullDateString(dateStr) { try { const date = new Date(dateStr); const year = date.getUTCFullYear(); const month = date.getUTCMonth() + 1; const day = date.getUTCDate(); const dayOfWeek = getDayOfWeek(dateStr); return `${year}년 ${month}월 ${day}일 (${dayOfWeek})`; } catch (e) { return dateStr; } }
+        function updateScoreDisplay(testType) { const totalInput = document.getElementById(`totalQ_${testType}`); const correctInput = document.getElementById(`correctA_${testType}`); const displayElement = document.getElementById(`scoreDisplay_${testType}`); if(totalInput && correctInput && displayElement) { const total = parseInt(totalInput.value) || 0; const correct = parseInt(correctInput.value) || 0; totalInput.classList.remove('error-highlight'); correctInput.classList.remove('error-highlight'); if(total > 0 && correct >= 0 && correct <= total) { const score = calculateScore(correct, total); displayElement.textContent = `-> ${score}점 (${correct}/${total})`; } else if (total > 0 && (correct > total || correct < 0)) { displayElement.textContent = `-> (정답 수 확인 필요)`; correctInput.classList.add('error-highlight'); } else if (total === 0 && correct > 0) { displayElement.textContent = `-> (총 문항 수 확인 필요)`; totalInput.classList.add('error-highlight'); } else { displayElement.textContent = ""; } } }
         function initializeApp() {
             if (isInitialized) return; 
-            const inputSection = document.getElementById('input-section');
-            const reportView = document.getElementById('report-view');
-            const studentNameInput = document.getElementById('studentName');
-            const reportDateInput = document.getElementById('reportDate');
-            const parentSelect = document.getElementById('parentSelect'); 
-            const todayProgressInput = document.getElementById('todayProgress');
-            const todayHomeworkInput = document.getElementById('todayHomework');
-            const homeworkRateInput = document.getElementById('homeworkRate'); 
-            const teacherCommentInput = document.getElementById('teacherComment'); 
-            const testTypes = ['daily', 'confirm', 'custom'];
-            const testInputs = {};
-            testTypes.forEach(type => {
-                 testInputs[`totalQ_${type}`] = document.getElementById(`totalQ_${type}`);
-                 testInputs[`correctA_${type}`] = document.getElementById(`correctA_${type}`);
-                 testInputs[`scoreDisplay_${type}`] = document.getElementById(`scoreDisplay_${type}`);
-            });
-            const customTestNameInput = document.getElementById('customTestName');
-            const generateButton = document.getElementById('generateButton');
-            const buttonText = document.getElementById('buttonText');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const errorMessage = document.getElementById('errorMessage');
-            const editButton = document.getElementById('editButton');
-            const printButton = document.getElementById('printButton');
-            const reportStudentNameHeader = document.getElementById('report-student-name-header');
-            const reportDateHeader = document.getElementById('report-date-header');
-            const reportProgressDisplay = document.getElementById('report-progress-display');
-            const reportHomeworkRateDisplay = document.getElementById('report-homework-rate-display'); 
-            const reportHomeworkDisplay = document.getElementById('report-homework-display');
-            const reportScoreList = document.getElementById('report-score-list'); 
-            const reportTeacherCommentCard = document.getElementById('teacher-comment-card'); 
-            const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display'); 
-            const reportCommentDisplay = document.getElementById('report-comment-display');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const saveApiKey = document.getElementById('saveApiKey');
-            const apiKeyStatus = document.getElementById('apiKeyStatus');
-            const selectElements = document.querySelectorAll('select[id^="select-"]');
-            try { flatpickr(reportDateInput, { dateFormat: "Y-m-d", defaultDate: "today", locale: "ko" }); } 
-            catch (e) { console.error("Flatpickr loading failed:", e); reportDateInput.placeholder = "YYYY-MM-DD"; }
+            const inputSection = document.getElementById('input-section'); const reportView = document.getElementById('report-view'); const studentNameInput = document.getElementById('studentName'); const reportDateInput = document.getElementById('reportDate'); const parentSelect = document.getElementById('parentSelect'); const todayProgressInput = document.getElementById('todayProgress'); const todayHomeworkInput = document.getElementById('todayHomework'); const homeworkRateInput = document.getElementById('homeworkRate'); const teacherCommentInput = document.getElementById('teacherComment'); 
+            const testTypes = ['daily', 'confirm', 'custom']; const testInputs = {}; testTypes.forEach(type => { testInputs[`totalQ_${type}`] = document.getElementById(`totalQ_${type}`); testInputs[`correctA_${type}`] = document.getElementById(`correctA_${type}`); testInputs[`scoreDisplay_${type}`] = document.getElementById(`scoreDisplay_${type}`); }); const customTestNameInput = document.getElementById('customTestName');
+            const generateButton = document.getElementById('generateButton'); const buttonText = document.getElementById('buttonText'); const loadingSpinner = document.getElementById('loadingSpinner'); const errorMessage = document.getElementById('errorMessage'); const editButton = document.getElementById('editButton'); const printButton = document.getElementById('printButton');
+            const reportStudentNameHeader = document.getElementById('report-student-name-header'); const reportDateHeader = document.getElementById('report-date-header'); const reportProgressDisplay = document.getElementById('report-progress-display'); const reportHomeworkRateDisplay = document.getElementById('report-homework-rate-display'); const reportHomeworkDisplay = document.getElementById('report-homework-display'); const reportScoreList = document.getElementById('report-score-list'); const reportTeacherCommentCard = document.getElementById('teacher-comment-card'); const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display'); const reportCommentDisplay = document.getElementById('report-comment-display');
+            const apiKeyInput = document.getElementById('apiKeyInput'); const saveApiKey = document.getElementById('saveApiKey'); const apiKeyStatus = document.getElementById('apiKeyStatus'); const selectElements = document.querySelectorAll('select[id^="select-"]');
+            try { flatpickr(reportDateInput, { dateFormat: "Y-m-d", defaultDate: "today", locale: "ko" }); } catch (e) { console.error("Flatpickr loading failed:", e); reportDateInput.placeholder = "YYYY-MM-DD"; }
             loadKeyFromStorage(apiKeyInput, apiKeyStatus); 
             testTypes.forEach(type => updateScoreDisplay(type));
-            testTypes.forEach(type => {
-                 if (testInputs[`totalQ_${type}`] && testInputs[`correctA_${type}`]) {
-                     [testInputs[`totalQ_${type}`], testInputs[`correctA_${type}`]].forEach(input => {
-                         input.addEventListener('input', () => updateScoreDisplay(type));
-                     });
-                 }
-            });
-            [todayProgressInput, todayHomeworkInput, teacherCommentInput].forEach(textarea => {
-                 if (textarea) { 
-                     textarea.addEventListener('input', () => autoGrowTextarea(textarea));
-                     autoGrowTextarea(textarea); 
-                 }
-            });
-            if (generateButton) {
-                generateButton.addEventListener('click', () => handleGenerateReport( 
-                    apiKeyInput, studentNameInput, reportDateInput, parentSelect, 
-                    todayProgressInput, todayHomeworkInput, homeworkRateInput, teacherCommentInput, 
-                    testInputs, customTestNameInput, selectElements, errorMessage,
-                    generateButton, buttonText, loadingSpinner ));
-            } else { console.error("generateButton not found."); }
-            if (editButton) {
-                editButton.addEventListener('click', () => showInputView( reportView, inputSection, testInputs, 
-                    todayProgressInput, todayHomeworkInput, teacherCommentInput ));
-            } else { console.error("editButton not found."); }
-            if (printButton) { printButton.addEventListener('click', () => window.print()); } 
-            else { console.error("printButton not found."); }
-            if (saveApiKey) { saveApiKey.addEventListener('click', () => saveKeyToStorage(apiKeyInput, apiKeyStatus)); } 
-            else { console.error("saveApiKey button not found."); }
+            testTypes.forEach(type => { if (testInputs[`totalQ_${type}`] && testInputs[`correctA_${type}`]) { [testInputs[`totalQ_${type}`], testInputs[`correctA_${type}`]].forEach(input => { input.addEventListener('input', () => updateScoreDisplay(type)); }); } });
+            [todayProgressInput, todayHomeworkInput, teacherCommentInput].forEach(textarea => { if (textarea) { textarea.addEventListener('input', () => autoGrowTextarea(textarea)); autoGrowTextarea(textarea); } });
+            if (generateButton) { generateButton.addEventListener('click', () => handleGenerateReport( apiKeyInput, studentNameInput, reportDateInput, parentSelect, todayProgressInput, todayHomeworkInput, homeworkRateInput, teacherCommentInput, testInputs, customTestNameInput, selectElements, errorMessage, generateButton, buttonText, loadingSpinner )); } else { console.error("generateButton not found."); }
+            if (editButton) { editButton.addEventListener('click', () => showInputView( reportView, inputSection, testInputs, todayProgressInput, todayHomeworkInput, teacherCommentInput )); } else { console.error("editButton not found."); }
+            if (printButton) { printButton.addEventListener('click', () => window.print()); } else { console.error("printButton not found."); }
+            if (saveApiKey) { saveApiKey.addEventListener('click', () => saveKeyToStorage(apiKeyInput, apiKeyStatus)); } else { console.error("saveApiKey button not found."); }
             if(apiKeyInput) { apiKeyInput.addEventListener('input', () => { if(apiKeyStatus) apiKeyStatus.classList.add('hidden'); }); }
-            isInitialized = true; 
-            console.log("Initialization complete."); 
+            isInitialized = true; console.log("Initialization complete."); 
         }
         const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } }, x: { ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } } }, plugins: { legend: { display: false }, tooltip: { enabled: true, bodyFont: { font: { family: "'Noto Sans KR', sans-serif" } }, titleFont: { font: { family: "'Noto Sans KR', sans-serif" } } } } };
         function renderOutputChartConditional(conductedTests) { 
             try {
-                const ctx = document.getElementById('scoreChartOutput').getContext('2d');
-                if (!ctx) { console.error("scoreChartOutput canvas not found."); return; }
+                const ctx = document.getElementById('scoreChartOutput').getContext('2d'); if (!ctx) { console.error("scoreChartOutput canvas not found."); return; }
                 if (outputChartInstance) { outputChartInstance.destroy(); }
                 if (conductedTests.length === 0) { ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); outputChartInstance = null; return; }
-                const labels = conductedTests.map(test => test.name);
-                const data = conductedTests.map(test => test.score);
+                const labels = conductedTests.map(test => test.name); const data = conductedTests.map(test => test.score);
                 const backgroundColors = conductedTests.map((_, index) => ['rgba(79, 70, 229, 0.6)', 'rgba(59, 130, 246, 0.6)', 'rgba(16, 185, 129, 0.6)'][index % 3]);
                 const borderColors = conductedTests.map((_, index) => ['rgba(79, 70, 229, 1)', 'rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'][index % 3]);
                 chartDataStore = { labels: labels, datasets: [{ label: '점수', data: data, backgroundColor: backgroundColors, borderColor: borderColors, borderWidth: 1, borderRadius: 5 }] };
@@ -368,62 +267,27 @@
             } catch (e) { console.error("Output chart render failed:", e); }
         }
         function showInputView(reportView, inputSection, testInputs, todayProgressInput, todayHomeworkInput, teacherCommentInput) { 
-            reportView.classList.add('hidden');
-            inputSection.classList.remove('hidden');
+            reportView.classList.add('hidden'); inputSection.classList.remove('hidden');
             Object.keys(testInputs).filter(key => key.startsWith('scoreDisplay')).forEach(displayKey => { const type = displayKey.split('_')[1]; updateScoreDisplay(type); });
             autoGrowTextarea(todayProgressInput); autoGrowTextarea(todayHomeworkInput); autoGrowTextarea(teacherCommentInput); 
         }
         function showReportView(generatedComment, teacherComment, studentName, reportDate, todayProgress, todayHomework, homeworkRate, conductedTests) { 
-            const reportView = document.getElementById('report-view');
-            const inputSection = document.getElementById('input-section');
-            const reportStudentNameHeader = document.getElementById('report-student-name-header');
-            const reportDateHeader = document.getElementById('report-date-header');
-            const reportProgressDisplay = document.getElementById('report-progress-display');
-            const reportHomeworkRateDisplay = document.getElementById('report-homework-rate-display');
-            const reportHomeworkDisplay = document.getElementById('report-homework-display');
-            const reportScoreList = document.getElementById('report-score-list');
-            const reportTeacherCommentCard = document.getElementById('teacher-comment-card');
-            const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display');
-            const reportCommentDisplay = document.getElementById('report-comment-display');
-            const scoreSection = document.getElementById('report-score-list').closest('.report-card'); 
-            reportStudentNameHeader.textContent = studentName;
-            reportDateHeader.textContent = formatFullDateString(reportDate); 
-            reportProgressDisplay.textContent = todayProgress || "(입력 없음)";
-            reportHomeworkRateDisplay.textContent = homeworkRate !== null ? `${homeworkRate}%` : "(입력 없음)";
-            reportHomeworkDisplay.textContent = todayHomework || "(입력 없음)";
+            const reportView = document.getElementById('report-view'); const inputSection = document.getElementById('input-section'); const reportStudentNameHeader = document.getElementById('report-student-name-header'); const reportDateHeader = document.getElementById('report-date-header'); const reportProgressDisplay = document.getElementById('report-progress-display'); const reportHomeworkRateDisplay = document.getElementById('report-homework-rate-display'); const reportHomeworkDisplay = document.getElementById('report-homework-display'); const reportScoreList = document.getElementById('report-score-list'); const reportTeacherCommentCard = document.getElementById('teacher-comment-card'); const reportTeacherCommentDisplay = document.getElementById('report-teacher-comment-display'); const reportCommentDisplay = document.getElementById('report-comment-display'); const scoreSection = document.getElementById('report-score-list').closest('.report-card'); 
+            reportStudentNameHeader.textContent = studentName; reportDateHeader.textContent = formatFullDateString(reportDate); reportProgressDisplay.textContent = todayProgress || "(입력 없음)"; reportHomeworkRateDisplay.textContent = homeworkRate !== null ? `${homeworkRate}%` : "(입력 없음)"; reportHomeworkDisplay.textContent = todayHomework || "(입력 없음)";
             reportScoreList.innerHTML = ''; 
             if (conductedTests.length > 0) {
                  conductedTests.forEach(test => { const listItem = document.createElement('li'); listItem.textContent = `${test.name}: ${test.score}점 (${test.correct}/${test.total})`; reportScoreList.appendChild(listItem); });
-                 scoreSection.style.display = 'block'; 
-                 renderOutputChartConditional(conductedTests); 
-            } else {
-                 scoreSection.style.display = 'none'; 
-                 if (outputChartInstance) { outputChartInstance.destroy(); outputChartInstance = null; }
-            }
-            if (teacherComment && teacherComment.trim() !== '') {
-                 reportTeacherCommentDisplay.textContent = teacherComment;
-                 reportTeacherCommentCard.classList.remove('hidden');
-            } else {
-                 reportTeacherCommentDisplay.textContent = '';
-                 reportTeacherCommentCard.classList.add('hidden');
-            }
+                 scoreSection.style.display = 'block'; renderOutputChartConditional(conductedTests); 
+            } else { scoreSection.style.display = 'none'; if (outputChartInstance) { outputChartInstance.destroy(); outputChartInstance = null; } }
+            if (teacherComment && teacherComment.trim() !== '') { reportTeacherCommentDisplay.textContent = teacherComment; reportTeacherCommentCard.classList.remove('hidden'); } 
+            else { reportTeacherCommentDisplay.textContent = ''; reportTeacherCommentCard.classList.add('hidden'); }
             reportCommentDisplay.textContent = generatedComment || "(코멘트 생성 실패)"; 
-            inputSection.classList.add('hidden');
-            reportView.classList.remove('hidden');
-            window.scrollTo(0, 0); 
+            inputSection.classList.add('hidden'); reportView.classList.remove('hidden'); window.scrollTo(0, 0); 
         }
         async function handleGenerateReport( apiKeyInput, studentNameInput, reportDateInput, parentSelect, todayProgressInput, todayHomeworkInput, homeworkRateInput, teacherCommentInput, testInputs, customTestNameInput, selectElements, errorMessage, generateButton, buttonText, loadingSpinner ) {
-            console.log("handleGenerateReport called"); 
-            if (isGenerating) { console.log("Generation already in progress."); return; }
+            console.log("handleGenerateReport called"); if (isGenerating) { console.log("Generation already in progress."); return; }
             if (!globalApiKey) { showError("API 키를 먼저 '0. API 키 설정'에서 입력하고 저장해 주세요.", errorMessage); if(apiKeyInput) apiKeyInput.focus(); return; }
-            const studentName = studentNameInput.value.trim();
-            const reportDate = reportDateInput.value;
-            const parentName = parentSelect.value; 
-            const todayProgress = todayProgressInput.value.trim();
-            const todayHomework = todayHomeworkInput.value.trim();
-            const homeworkRateRaw = homeworkRateInput.value.trim();
-            const homeworkRate = homeworkRateRaw === '' ? null : parseInt(homeworkRateRaw); 
-            const teacherComment = teacherCommentInput.value.trim();
+            const studentName = studentNameInput.value.trim(); const reportDate = reportDateInput.value; const parentName = parentSelect.value; const todayProgress = todayProgressInput.value.trim(); const todayHomework = todayHomeworkInput.value.trim(); const homeworkRateRaw = homeworkRateInput.value.trim(); const homeworkRate = homeworkRateRaw === '' ? null : parseInt(homeworkRateRaw); const teacherComment = teacherCommentInput.value.trim();
             studentNameInput.classList.remove('error-highlight'); reportDateInput.classList.remove('error-highlight'); todayProgressInput.classList.remove('error-highlight'); todayHomeworkInput.classList.remove('error-highlight'); if(homeworkRateInput) homeworkRateInput.classList.remove('error-highlight');
             if (!studentName) { showError("학생 이름을 입력해주세요.", errorMessage); studentNameInput.focus(); studentNameInput.classList.add('error-highlight'); return; }
             if (!reportDate) { showError("리포트 날짜를 입력해주세요.", errorMessage); reportDateInput.focus(); reportDateInput.classList.add('error-highlight'); return; }
@@ -431,17 +295,7 @@
             if (!todayHomework) { showError("'오늘의 숙제'를 입력해주세요.", errorMessage); todayHomeworkInput.focus(); todayHomeworkInput.classList.add('error-highlight'); return; } 
             const conductedTests = []; const testTypeMap = { daily: '일일테스트', confirm: '확인테스트', custom: customTestNameInput.value.trim() || '추가 테스트' };
             let hasInvalidScore = false;
-            Object.keys(testTypeMap).forEach(type => {
-                 const totalInput = testInputs[`totalQ_${type}`]; const correctInput = testInputs[`correctA_${type}`];
-                 if (totalInput && correctInput) {
-                     const total = parseInt(totalInput.value) || 0; const correct = parseInt(correctInput.value) || 0;
-                     totalInput.classList.remove('error-highlight'); correctInput.classList.remove('error-highlight');
-                     if (total > 0) { 
-                         if (correct < 0 || correct > total) { showError(`${testTypeMap[type]}의 정답 수는 0과 ${total} 사이여야 합니다.`, errorMessage); correctInput.focus(); correctInput.classList.add('error-highlight'); hasInvalidScore = true; return; } 
-                         const score = calculateScore(correct, total); conductedTests.push({ name: testTypeMap[type], total: total, correct: correct, score: score });
-                     } else if (correct > 0) { showError(`${testTypeMap[type]}의 총 문항 수를 1 이상 입력해주세요.`, errorMessage); totalInput.focus(); totalInput.classList.add('error-highlight'); hasInvalidScore = true; return; } 
-                 }
-            });
+            Object.keys(testTypeMap).forEach(type => { const totalInput = testInputs[`totalQ_${type}`]; const correctInput = testInputs[`correctA_${type}`]; if (totalInput && correctInput) { const total = parseInt(totalInput.value) || 0; const correct = parseInt(correctInput.value) || 0; totalInput.classList.remove('error-highlight'); correctInput.classList.remove('error-highlight'); if (total > 0) { if (correct < 0 || correct > total) { showError(`${testTypeMap[type]}의 정답 수는 0과 ${total} 사이여야 합니다.`, errorMessage); correctInput.focus(); correctInput.classList.add('error-highlight'); hasInvalidScore = true; return; } const score = calculateScore(correct, total); conductedTests.push({ name: testTypeMap[type], total: total, correct: correct, score: score }); } else if (correct > 0) { showError(`${testTypeMap[type]}의 총 문항 수를 1 이상 입력해주세요.`, errorMessage); totalInput.focus(); totalInput.classList.add('error-highlight'); hasInvalidScore = true; return; } } });
             if (hasInvalidScore) return; 
             if (homeworkRate !== null && (homeworkRate < 0 || homeworkRate > 100)) { showError("숙제 수행률은 0과 100 사이의 숫자여야 합니다.", errorMessage); homeworkRateInput.focus(); homeworkRateInput.classList.add('error-highlight'); return; } 
             setLoading(true, generateButton, buttonText, loadingSpinner, errorMessage); isGenerating = true; 
