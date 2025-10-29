@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인재원 수학 학생 리포트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; background-color: #f4f7f6; }
+        .flatpickr-calendar { font-family: 'Noto Sans KR', sans-serif; }
+        @media print {
+            body { background-color: #ffffff; }
+            #input-section, #report-buttons { display: none !important; }
+            #report-view { display: block !important; box-shadow: none !important; margin: 0 !important; max-width: 100% !important; border: none !important; }
+            #report-view h3 { font-weight: 600 !important; }
+            .chart-container-output { background-color: transparent !important; box-shadow: none !important; }
+        }
+        textarea { resize: none; overflow-y: hidden; }
+        .report-section { margin-bottom: 1.5rem; }
+        .report-section h3 { font-size: 1.125rem; font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+        .report-section p, .report-section ul li { font-size: 1rem; color: #374151; line-height: 1.75; white-space: pre-wrap; }
+        .test-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: end; }
+        .test-score-display { margin-top: 0.5rem; font-weight: 600; color: #4f46e5; }
+        .custom-test-name-input { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="input-section">
+        <div class="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-8">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-indigo-700">인재원 수학 학생 리포트</h1>
+                <p class="mt-2 text-lg text-gray-600">학생 데이터를 기반으로 학부모님께 전달할 상세 리포트를 생성합니다.</p>
+            </div>
+            
+            <div class="space-y-4 p-4 bg-gray-100 rounded-lg">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-gray-500 pl-3">0. API 키 설정 (최초 1회)</h2>
+                <p class="text-sm text-gray-600">AI 자동 생성을 사용하려면 Google AI Studio에서 발급받은 API 키가 필요합니다. 입력된 키는 이 브라우저에만 저장됩니다.</p>
+                <div>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-gray-700 mb-1">Google AI API Key</label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="apiKeyInput" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="AIza...">
+                        <button id="saveApiKey" class="w-full sm:w-auto bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200">
+                            키 저장하기
+                        </button>
+                    </div>
+                    <p id="apiKeyStatus" class="text-sm mt-2 hidden"></p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">1. 기본 정보</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">학생 이름</label>
+                        <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="예: 박소선">
+                    </div>
+                    <div>
+                        <label for="parentSelect" class="block text-sm font-medium text-gray-700 mb-1">리포트 받으시는 분</label>
+                        <select id="parentSelect" class="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm">
+                            <option value="부모님께">부모님께</option>
+                            <option value="어머님께">어머님께</option>
+                            <option value="아버님께">아버님께</option>
+                            <option value="할머님께">할머님께</option>
+                            <option value="할아버님께">할아버님께</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reportDate" class="block text-sm font-medium text-gray-700 mb-1">리포트 날짜</label>
+                        <input type="text" id="reportDate" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="날짜 선택">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="todayProgress" class="block text-sm font-medium text-gray-700 mb-1">오늘의 진도</label>
+                        <textarea id="todayProgress" rows="2" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="예: 다항식의 곱셈 개념 학습 및 유형 문제 풀이"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="todayHomework" class="block text-sm font-medium text-gray-700 mb-1">오늘의 숙제</label>
+                        <textarea id="todayHomework" rows="2" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm" placeholder="예: 개념원리 p.35~38 풀기, 오답노트 정리"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">2. 수학 테스트 결과</h2>
+                
+                <div class="p-4 border rounded-lg space-y-3">
+                    <p class="font-medium text-gray-700">일일테스트 (지난 시간 복습)</p>
+                    <div class="test-input-grid">
+                        <div>
+                            <label for="totalQ_daily" class="block text-sm text-gray-600 mb-1">총 문항</label>
+                            <input type="number" id="totalQ_daily" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="10">
+                        </div>
+                        <div>
+                            <label for="correctA_daily" class="block text-sm text-gray-600 mb-1">정답 수</label>
+                            <input type="number" id="correctA_daily" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="8">
+                        </div>
+                    </div>
+                    <p id="scoreDisplay_daily" class="test-score-display text-sm"></p>
+                </div>
+
+                <div class="p-4 border rounded-lg space-y-3">
+                    <p class="font-medium text-gray-700">확인테스트 (오늘 수업)</p>
+                     <div class="test-input-grid">
+                        <div>
+                            <label for="totalQ_confirm" class="block text-sm text-gray-600 mb-1">총 문항</label>
+                            <input type="number" id="totalQ_confirm" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="5">
+                        </div>
+                        <div>
+                            <label for="correctA_confirm" class="block text-sm text-gray-600 mb-1">정답 수</label>
+                            <input type="number" id="correctA_confirm" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="4">
+                        </div>
+                    </div>
+                     <p id="scoreDisplay_confirm" class="test-score-display text-sm"></p>
+                </div>
+
+                <div class="p-4 border rounded-lg space-y-3">
+                    <input type="text" id="customTestName" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm custom-test-name-input font-medium" placeholder="추가 테스트 이름 입력 (예: 단원평가)">
+                     <div class="test-input-grid">
+                        <div>
+                            <label for="totalQ_custom" class="block text-sm text-gray-600 mb-1">총 문항</label>
+                            <input type="number" id="totalQ_custom" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="25">
+                        </div>
+                        <div>
+                            <label for="correctA_custom" class="block text-sm text-gray-600 mb-1">정답 수</label>
+                            <input type="number" id="correctA_custom" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="20">
+                        </div>
+                    </div>
+                     <p id="scoreDisplay_custom" class="test-score-display text-sm"></p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">3. 학습 태도 및 역량 (AI 코멘트 생성용)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div class="space-y-1">
+                        <label for="select-participation" class="text-sm font-medium text-gray-700">수업 참여도</label>
+                        <select id="select-participation" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                            <option value="">선택 안함</option>
+                            <option value="매우 우수">매우 우수</option>
+                            <option value="우수">우수</option>
+                            <option value="보통">보통</option>
+                            <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-engagement" class="text-sm font-medium text-gray-700">수업 몰입도</label>
+                        <select id="select-engagement" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-attitude" class="text-sm font-medium text-gray-700">학습 태도</label>
+                        <select id="select-attitude" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-diligence" class="text-sm font-medium text-gray-700">성실함 (과제/출결)</label>
+                        <select id="select-diligence" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-proactiveness" class="text-sm font-medium text-gray-700">주도성 (질문/탐구)</label>
+                        <select id="select-proactiveness" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-collaboration" class="text-sm font-medium text-gray-700">또래와의 협업 능력</label>
+                        <select id="select-collaboration" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-concept" class="text-sm font-medium text-gray-700">개념 이해도</label>
+                        <select id="select-concept" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-problemSolving" class="text-sm font-medium text-gray-700">문제 해결력</label>
+                        <select id="select-problemSolving" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-perseverance" class="text-sm font-medium text-gray-700">문제 해결 끈기</label>
+                        <select id="select-perseverance" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label for="select-criticalThinking" class="text-sm font-medium text-gray-700">사고력</label>
+                        <select id="select-criticalThinking" class="w-full p-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+                             <option value="">선택 안함</option>
+                             <option value="매우 우수">매우 우수</option>
+                             <option value="우수">우수</option>
+                             <option value="보통">보통</option>
+                             <option value="개선 필요">개선 필요</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t">
+                <button id="generateButton" class="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200 ease-in-out flex items-center justify-center">
+                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="buttonText">리포트 생성하기</span> 
+                </button>
+            </div>
+            
+            <div id="errorMessage" class="hidden p-4 bg-red-100 text-red-700 rounded-lg"></div>
+
+        </div>
+    </div>
+
+    <div id="report-view" class="hidden">
+        <div class="max-w-4xl mx-auto p-8 md:p-12 bg-white rounded-2xl shadow-xl border border-gray-100" style="font-family: 'Noto Sans KR', sans-serif;">
+            
+            <div id="report-buttons" class="mb-8 flex flex-col sm:flex-row gap-2 print:hidden">
+                <button id="editButton" class="w-full sm:w-auto flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200">
+                    내용 수정하기
+                </button>
+                <button id="printButton" class="w-full sm:w-auto flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 transition duration-200">
+                    인쇄하기 (PDF 저장)
+                </button>
+            </div>
+
+            <div class="text-center mb-8">
+                <h1 id="report-title" class="text-2xl font-bold text-gray-800"></h1>
+            </div>
+
+            <div class="report-section">
+                <h3 id="report-progress-title">[오늘의 진도]</h3>
+                <p id="report-progress-display"></p>
+            </div>
+
+            <div class="report-section">
+                <h3 id="report-homework-title">[오늘의 과제]</h3>
+                <p id="report-homework-display"></p>
+            </div>
+
+            <div class="report-section">
+                <h3 id="report-score-title">[오늘의 테스트점수]</h3>
+                <ul id="report-score-list" class="list-disc list-inside space-y-1"></ul> 
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg shadow-inner chart-container-output" style="height: 250px;">
+                    <canvas id="scoreChartOutput"></canvas>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3 id="report-comment-title">[전하는말]</h3>
+                <p id="report-comment-display"></p>
+            </div>
+            
+            <div class="mt-12 pt-6 border-t text-center text-gray-500 text-sm">
+                <p>본 리포트는 인재원 수학에서 학생의 성장을 돕기 위해 정성껏 작성되었습니다.</p>
+                <p class="font-semibold mt-1">인재원 수학</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let globalApiKey = ""; 
+        let inputChartInstance = null;
+        let outputChartInstance = null;
+        let chartDataStore = {};
+        
+        let isInitialized = false; 
+        let isGenerating = false; 
+        
+        function calculateScore(correct, total) {
+            if (!total || total <= 0) return 0;
+            const score = Math.round((correct / total) * 100);
+            return Math.max(0, Math.min(score, 100));
+        }
+
+        function autoGrowTextarea(element) {
+             if (!element) return;
+            element.style.height = 'auto';
+            element.style.height = (element.scrollHeight) + 'px';
+        }
+
+        function getDayOfWeek(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const dayIndex = date.getUTCDay(); 
+                return days[dayIndex];
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function formatFullDateString(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const year = date.getUTCFullYear();
+                const month = date.getUTCMonth() + 1;
+                const day = date.getUTCDate();
+                const dayOfWeek = getDayOfWeek(dateStr);
+                return `${String(year).slice(-2)}년 ${month}월 ${day}일 (${dayOfWeek})`; 
+            } catch (e) {
+                return dateStr; 
+            }
+        }
+
+        function updateScoreDisplay(testType) {
+             const totalInput = document.getElementById(`totalQ_${testType}`);
+             const correctInput = document.getElementById(`correctA_${testType}`);
+             const displayElement = document.getElementById(`scoreDisplay_${testType}`);
+             
+             if(totalInput && correctInput && displayElement) {
+                 const total = parseInt(totalInput.value) || 0;
+                 const correct = parseInt(correctInput.value) || 0;
+                 if(total > 0 && correct >= 0 && correct <= total) {
+                     const score = calculateScore(correct, total);
+                     displayElement.textContent = `-> ${score}점 (${correct}/${total})`;
+                 } else {
+                     displayElement.textContent = ""; 
+                 }
+             }
+        }
+
+
+        function initializeApp() {
+            if (isInitialized) return; 
+
+            const inputSection = document.getElementById('input-section');
+            const reportView = document.getElementById('report-view');
+            
+            const studentNameInput = document.getElementById('studentName');
+            const reportDateInput = document.getElementById('reportDate');
+            const parentSelect = document.getElementById('parentSelect'); 
+            const todayProgressInput = document.getElementById('todayProgress');
+            const todayHomeworkInput = document.getElementById('todayHomework');
+            
+            const testTypes = ['daily', 'confirm', 'custom'];
+            const testInputs = {};
+            testTypes.forEach(type => {
+                 testInputs[`totalQ_${type}`] = document.getElementById(`totalQ_${type}`);
+                 testInputs[`correctA_${type}`] = document.getElementById(`correctA_${type}`);
+                 testInputs[`scoreDisplay_${type}`] = document.getElementById(`scoreDisplay_${type}`);
+            });
+            const customTestNameInput = document.getElementById('customTestName');
+            
+            const generateButton = document.getElementById('generateButton');
+            const buttonText = document.getElementById('buttonText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            const editButton = document.getElementById('editButton');
+            const printButton = document.getElementById('printButton');
+            
+            const reportTitle = document.getElementById('report-title'); 
+            const reportProgressDisplay = document.getElementById('report-progress-display');
+            const reportHomeworkDisplay = document.getElementById('report-homework-display');
+            const reportScoreList = document.getElementById('report-score-list'); 
+            const reportCommentDisplay = document.getElementById('report-comment-display');
+            
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const saveApiKey = document.getElementById('saveApiKey');
+            const apiKeyStatus = document.getElementById('apiKeyStatus');
+
+            const selectElements = document.querySelectorAll('select[id^="select-"]');
+
+            try {
+                flatpickr(reportDateInput, {
+                    dateFormat: "Y-m-d",
+                    defaultDate: "today",
+                    locale: "ko"
+                });
+            } catch (e) {
+                console.error("Flatpickr loading failed:", e);
+                reportDateInput.placeholder = "YYYY-MM-DD (Date picker failed)";
+            }
+            
+            loadKeyFromStorage(apiKeyInput, apiKeyStatus); 
+
+            testTypes.forEach(type => updateScoreDisplay(type));
+            
+            testTypes.forEach(type => {
+                 if (testInputs[`totalQ_${type}`] && testInputs[`correctA_${type}`]) {
+                     [testInputs[`totalQ_${type}`], testInputs[`correctA_${type}`]].forEach(input => {
+                         input.addEventListener('input', () => updateScoreDisplay(type));
+                     });
+                 }
+            });
+
+
+            [todayProgressInput, todayHomeworkInput].forEach(textarea => {
+                 if (textarea) { 
+                     textarea.addEventListener('input', () => autoGrowTextarea(textarea));
+                     autoGrowTextarea(textarea); 
+                 }
+            });
+
+            if (generateButton) {
+                generateButton.addEventListener('click', () => handleGenerateReport( 
+                    apiKeyInput, 
+                    studentNameInput, reportDateInput, parentSelect, 
+                    todayProgressInput, todayHomeworkInput, 
+                    testInputs, customTestNameInput, 
+                    selectElements,
+                    errorMessage,
+                    generateButton, buttonText, loadingSpinner
+                ));
+            } else {
+                 console.error("generateButton not found.");
+            }
+            
+            if (editButton) {
+                editButton.addEventListener('click', () => showInputView(
+                    reportView, inputSection, 
+                    testInputs, 
+                    todayProgressInput, todayHomeworkInput 
+                ));
+            } else {
+                 console.error("editButton not found.");
+            }
+
+            if (printButton) {
+                 printButton.addEventListener('click', () => window.print());
+            } else {
+                 console.error("printButton not found.");
+            }
+            
+            if (saveApiKey) {
+                saveApiKey.addEventListener('click', () => saveKeyToStorage(apiKeyInput, apiKeyStatus));
+            } else {
+                console.error("saveApiKey button not found.");
+            }
+            
+            if(apiKeyInput) {
+                apiKeyInput.addEventListener('input', () => {
+                    if(apiKeyStatus) apiKeyStatus.classList.add('hidden'); 
+                });
+            }
+            
+            isInitialized = true; 
+            console.log("Initialization complete."); 
+        }
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100, ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } }, 
+                x: { ticks: { font: { family: "'Noto Sans KR', sans-serif", size: 12 } } } 
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    bodyFont: { font: { family: "'Noto Sans KR', sans-serif" } },
+                    titleFont: { font: { family: "'Noto Sans KR', sans-serif" } }
+                }
+            }
+        };
+        
+        function renderOutputChartConditional(conductedTests) { 
+            try {
+                const ctx = document.getElementById('scoreChartOutput').getContext('2d');
+                if (!ctx) { console.error("scoreChartOutput canvas not found."); return; }
+                
+                if (outputChartInstance) { outputChartInstance.destroy(); }
+
+                const labels = conductedTests.map(test => test.name);
+                const data = conductedTests.map(test => test.score);
+                const backgroundColors = conductedTests.map((_, index) => {
+                     const colors = ['rgba(79, 70, 229, 0.6)', 'rgba(59, 130, 246, 0.6)', 'rgba(16, 185, 129, 0.6)'];
+                     return colors[index % colors.length]; 
+                });
+                 const borderColors = conductedTests.map((_, index) => {
+                     const colors = ['rgba(79, 70, 229, 1)', 'rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'];
+                     return colors[index % colors.length];
+                });
+
+                 chartDataStore = {
+                     labels: labels, 
+                     datasets: [{
+                         label: '점수', 
+                         data: data,
+                         backgroundColor: backgroundColors,
+                         borderColor: borderColors,
+                         borderWidth: 1,
+                         borderRadius: 5
+                     }]
+                 };
+                
+                outputChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartDataStore, 
+                    options: chartOptions
+                });
+            } catch (e) {
+                console.error("Output chart render failed:", e);
+            }
+        }
+
+        function showInputView(reportView, inputSection, 
+                               testInputs, 
+                               todayProgressInput, todayHomeworkInput) { 
+            reportView.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            
+            Object.keys(testInputs).filter(key => key.startsWith('scoreDisplay')).forEach(displayKey => {
+                 const type = displayKey.split('_')[1];
+                 updateScoreDisplay(type);
+            });
+             
+            autoGrowTextarea(todayProgressInput);
+            autoGrowTextarea(todayHomeworkInput);
+        }
+
+        function showReportView(generatedComment, 
+                                studentName, reportDate, 
+                                todayProgress, todayHomework, 
+                                conductedTests) { 
+            const reportView = document.getElementById('report-view');
+            const inputSection = document.getElementById('input-section');
+            const reportTitle = document.getElementById('report-title');
+            const reportProgressDisplay = document.getElementById('report-progress-display');
+            const reportHomeworkDisplay = document.getElementById('report-homework-display');
+            const reportScoreList = document.getElementById('report-score-list');
+            const reportCommentDisplay = document.getElementById('report-comment-display');
+            const scoreSection = document.getElementById('report-score-title').closest('.report-section'); 
+
+            reportTitle.textContent = `${formatFullDateString(reportDate)} ${studentName} 수업보고서`;
+            reportProgressDisplay.textContent = todayProgress || "(입력 없음)";
+            reportHomeworkDisplay.textContent = todayHomework || "(입력 없음)";
+            
+            reportScoreList.innerHTML = ''; 
+            if (conductedTests.length > 0) {
+                 conductedTests.forEach(test => {
+                     const listItem = document.createElement('li');
+                     listItem.textContent = `${test.name}: ${test.score}점 (${test.correct}/${test.total})`;
+                     reportScoreList.appendChild(listItem);
+                 });
+                 scoreSection.style.display = 'block'; 
+                 renderOutputChartConditional(conductedTests); 
+            } else {
+                 scoreSection.style.display = 'none'; 
+                 if (outputChartInstance) {
+                     outputChartInstance.destroy(); 
+                     outputChartInstance = null; // 인스턴스 참조 제거
+                 }
+            }
+
+            reportCommentDisplay.textContent = generatedComment || "(코멘트 생성 실패)"; 
+            
+            inputSection.classList.add('hidden');
+            reportView.classList.remove('hidden');
+            window.scrollTo(0, 0); 
+        }
+
+        async function handleGenerateReport( 
+            apiKeyInput, studentNameInput, reportDateInput, parentSelect, 
+            todayProgressInput, todayHomeworkInput,
+            testInputs, customTestNameInput,
+            selectElements,
+            errorMessage,
+            generateButton, buttonText, loadingSpinner
+        ) {
+            console.log("handleGenerateReport called"); 
+            if (isGenerating) {
+                 console.log("Generation already in progress.");
+                 return; 
+            }
+
+            if (!globalApiKey) {
+                showError("API 키를 먼저 '0. API 키 설정'에서 입력하고 저장해 주세요.", errorMessage);
+                if(apiKeyInput) apiKeyInput.focus();
+                return;
+            }
+
+            const studentName = studentNameInput.value.trim();
+            const reportDate = reportDateInput.value;
+            const parentName = parentSelect.value; 
+            const todayProgress = todayProgressInput.value.trim();
+            const todayHomework = todayHomeworkInput.value.trim();
+            
+            const conductedTests = [];
+            const testTypeMap = { daily: '일일테스트', confirm: '확인테스트', custom: customTestNameInput.value.trim() || '추가 테스트' };
+            
+            let hasInvalidScore = false;
+            Object.keys(testTypeMap).forEach(type => {
+                 const totalInput = testInputs[`totalQ_${type}`];
+                 const correctInput = testInputs[`correctA_${type}`];
+                 if (totalInput && correctInput) {
+                     const total = parseInt(totalInput.value) || 0;
+                     const correct = parseInt(correctInput.value) || 0;
+                     
+                     if (total > 0) { 
+                         if (correct < 0 || correct > total) {
+                             showError(`${testTypeMap[type]}의 정답 수는 0과 ${total} 사이여야 합니다.`, errorMessage);
+                             correctInput.focus();
+                             hasInvalidScore = true;
+                             return; 
+                         }
+                         const score = calculateScore(correct, total);
+                         conductedTests.push({
+                             name: testTypeMap[type],
+                             total: total,
+                             correct: correct,
+                             score: score
+                         });
+                     } else if (correct > 0) {
+                          showError(`${testTypeMap[type]}의 총 문항 수를 1 이상 입력해주세요.`, errorMessage);
+                          totalInput.focus();
+                          hasInvalidScore = true;
+                          return;
+                     }
+                 }
+            });
+
+            if (hasInvalidScore) return; 
+
+            if (!studentName) {
+                showError("학생 이름을 입력해 주세요.", errorMessage);
+                studentNameInput.focus();
+                return;
+            }
+            if (!reportDate) {
+                showError("리포트 날짜를 선택해 주세요.", errorMessage);
+                reportDateInput.focus();
+                return;
+            }
+
+            setLoading(true, generateButton, buttonText, loadingSpinner, errorMessage);
+            isGenerating = true; 
+
+            let characteristics = []; 
+            selectElements.forEach(select => {
+                if (select.value) {
+                    const label = select.previousElementSibling.textContent;
+                    characteristics.push({
+                        item: label,
+                        level: select.value
+                    });
+                }
+            });
+
+            const systemPrompt = `당신은 '인재원 수학' 학원의 전문적이고 학생에게 애정이 넘치는, 다정다감한 선생님입니다.
+학부모님께 학생의 수학 학습 리포트를 전달하는 역할을 맡고 있습니다.
+제공되는 학생의 기본 정보(진도, 숙제), 여러 테스트 결과(테스트명, 점수, 맞힌 개수, 총 개수), 그리고 학습 태도 데이터를 바탕으로, **[전하는말]** 섹션에 들어갈 자연스러운 코멘트만 한국어로 작성해 주세요.
+
+**매우 중요 (인간적인 톤 & 분량 & 내용):**
+-   **사근사근한 말투:** 사무적이고 딱딱한 보고서 톤은 절대 금지합니다. 마치 학생과 일대일로 대화하듯, 따뜻하고 사근사근한 말투를 사용해 주세요. "~했어요", "~하고 있어요" 같은 부드러운 종결어미를 선호합니다.
+-   **친근한 호칭:** 학생 이름이 주어지면(예: 박소선), '소선 학생'이라고 부르지 말고 "소선이가", "소선이의", "소선이는"처럼 친근하게 이름을 불러주세요.
+-   **간결한 분량:** **[전하는말]** 코멘트는 **5~7 문장 내외로 매우 간결하게** 핵심만 요약해 주세요.
+-   **리포트 형식 준수:** 생성할 내용은 오직 **[전하는말]** 섹션에 들어갈 코멘트 본문입니다. 제목, 날짜, 진도, 과제, 점수 등 다른 섹션의 내용은 절대 포함하지 마세요.
+-   **학부모 호칭 사용 금지:** 코멘트 본문에는 부모님, 어머님 등의 호칭을 사용하지 마세요.
+-   **기간 표현 금지:** 이 리포트는 **'오늘 하루'**에 대한 보고서입니다. **'이번 주', '이번 달', '최근' 등 더 긴 기간을 나타내는 표현은 절대 사용하지 마세요.** 오직 오늘 수업과 테스트 결과에 대해서만 언급해야 합니다.
+-   **테스트 결과 종합 분석:**
+    -   **여러 테스트 결과**가 주어질 수 있습니다. (일일테스트: 지난 시간 복습, 확인테스트: 오늘 수업 이해도 등)
+    -   각 테스트의 **점수뿐만 아니라, 테스트의 종류(이름)를 고려**하여 종합적으로 학생의 상태를 파악해주세요. (예: 일일테스트는 잘 봤지만 확인테스트 점수가 낮다면 오늘 배운 내용에 어려움이 있을 수 있음)
+    -   모든 테스트를 잘 봤다면 전반적인 칭찬을, 특정 테스트만 못 봤다면 해당 부분에 대한 언급을 해주세요.
+    -   점수가 낮더라도 단정적으로 '못했다'고 표현하지 말고 '어려워하는 부분이 있는 것 같다', '복습이 더 필요하다' 등으로 부드럽게 표현해주세요.
+
+**[전하는말] 코멘트의 자연스러운 흐름:**
+* **(도입/칭찬):** **오늘** 학생의 긍정적인 모습 (학습 태도 중 우수 항목) 또는 **오늘 테스트 결과** (여러 테스트 결과를 종합적으로 고려하여)를 칭찬하며 시작합니다.
+* **(성장 영역):** **오늘** 보완이 필요한 부분 (학습 태도 중 보통/개선 필요 항목 또는 **오늘 테스트 결과** - 특정 테스트 결과나 전반적인 어려움)을 '성장할 부분'으로 부드럽게 짚어줍니다.
+* **(지도 계획):** 이 성장 영역을 돕기 위해 선생님으로서 **앞으로** 어떻게 지도할 것인지 간략히 언급합니다. (예: 오답 노트를 활용하도록 격려, 다음 시간에 유사 유형 문제 추가 제공, 개념 재설명 등)
+* **(마무리):** 학생에 대한 격려와 학부모님의 관심에 대한 감사로 마무리합니다.`;
+
+            let userQuery = `다음은 ${studentName} 학생의 오늘(${reportDate}) 수학 학습 데이터입니다.\n\n`;
+            userQuery += `오늘의 진도: ${todayProgress}\n`;
+            userQuery += `오늘의 숙제: ${todayHomework}\n\n`;
+            
+            userQuery += `테스트 결과:\n`;
+            if (conductedTests.length > 0) {
+                 conductedTests.forEach(test => {
+                     userQuery += `- ${test.name}: ${test.score}점 (${test.correct}/${test.total})\n`;
+                 });
+            } else {
+                 userQuery += `- 오늘 실시한 테스트가 없습니다.\n`;
+            }
+            userQuery += `\n`;
+            
+            userQuery += `학습 태도 및 역량:\n${JSON.stringify(characteristics)}\n\n`;
+            userQuery += "이 데이터를 바탕으로, 위 시스템 프롬프트의 모든 규칙을 준수하여 **[전하는말]** 섹션에 들어갈 코멘트 본문만 작성해 주세요.";
+
+
+            try {
+                const generatedComment = await callGeminiAPI(systemPrompt, userQuery); 
+                showReportView(
+                    generatedComment, 
+                    studentName, reportDate, 
+                    todayProgress, todayHomework,
+                    conductedTests 
+                );
+            } catch (error) {
+                console.error("AI Generation Failed:", error);
+                showError("리포트 생성에 실패했습니다. " + error.message, errorMessage);
+            } finally {
+                setLoading(false, generateButton, buttonText, loadingSpinner, errorMessage);
+                isGenerating = false; 
+            }
+        }
+
+        async function callGeminiAPI(systemPrompt, userQuery) {
+             if (!globalApiKey) {
+                 throw new Error("API 키가 설정되지 않았습니다.");
+             }
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${globalApiKey}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: userQuery }]
+                }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    temperature: 0.8, 
+                    topP: 0.9,
+                    topK: 40
+                }
+            };
+
+            let response;
+            let retries = 3;
+            let delay = 2000; 
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    console.log(`Attempt ${i + 1} to call Gemini API`); 
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    console.log(`API Response Status: ${response.status}`); 
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                            return result.candidates[0].content.parts[0].text.trim();
+                        } else if (result.candidates && result.candidates[0].finishReason === "SAFETY") {
+                             throw new Error("콘텐츠 생성 중 안전상의 이유로 중단되었습니다. 입력 내용을 확인해주세요.");
+                        } else {
+                            console.error("Unexpected API response structure:", result);
+                            throw new Error("AI로부터 유효한 응답을 받지 못했습니다. (응답 형식 오류)");
+                        }
+                    } else {
+                        if (response.status === 429 || response.status >= 500) { 
+                            if (i === retries - 1) throw new Error(`서버 오류 또는 요청 한도 초과 (Status: ${response.status})`);
+                            console.log(`Retrying after ${delay}ms due to status ${response.status}`); 
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; 
+                        } else {
+                            const errorBody = await response.json().catch(() => ({ error: { message: response.statusText } })); 
+                            const errorMessage = errorBody.error?.message || response.statusText;
+                            if (response.status === 401 || response.status === 403) {
+                                throw new Error(`API 키가 유효하지 않습니다. (오류: ${errorMessage})`);
+                            }
+                            if (errorMessage.includes("API has not been used") || errorMessage.includes("disabled")) {
+                                throw new Error(`API 사용 설정이 필요합니다. Google Cloud에서 'Generative Language API' 또는 'Vertex AI API'를 활성화(Enable)해주세요. (오류: ${errorMessage})`);
+                            }
+                             if (response.status === 400) {
+                                 console.error("API Request Payload:", payload); 
+                                 throw new Error(`잘못된 요청입니다 (400 Bad Request). API 요청 내용을 확인해주세요. 오류: ${errorMessage}`);
+                             }
+                            throw new Error(`API 오류: ${errorMessage}`);
+                        }
+                    }
+                } catch (networkError) {
+                    if (i === retries - 1) throw new Error(`네트워크 오류: ${networkError.message}`);
+                    console.log(`Retrying after ${delay}ms due to network error: ${networkError.message}`); 
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+            throw new Error("Failed to generate report after multiple retries.");
+        }
+
+
+        function setLoading(isLoading, generateButton, buttonText, loadingSpinner, errorMessage) {
+            if (isLoading) {
+                generateButton.disabled = true;
+                buttonText.textContent = "AI가 생성 중입니다..."; 
+                loadingSpinner.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
+            } else {
+                generateButton.disabled = false;
+                buttonText.textContent = "리포트 생성하기"; 
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function showError(message, errorMessage) {
+             if (!errorMessage) return; 
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+        
+        function saveKeyToStorage(apiKeyInput, apiKeyStatus) {
+            try {
+                const key = apiKeyInput.value.trim();
+                if (key && key.startsWith('AIza')) { 
+                    localStorage.setItem('injaewonApiKey_math_v1', key); 
+                    globalApiKey = key;
+                    apiKeyStatus.textContent = 'API 키가 브라우저에 안전하게 저장되었습니다.';
+                    apiKeyStatus.classList.remove('hidden', 'text-red-600');
+                    apiKeyStatus.classList.add('text-green-600');
+                    apiKeyInput.value = '**********' + key.slice(-4); 
+                } else {
+                    apiKeyStatus.textContent = "유효하지 않은 API 키 형식입니다. 'AIza...'로 시작해야 합니다.";
+                    apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                    apiKeyStatus.classList.add('text-red-600');
+                }
+            } catch (e) {
+                console.error("Failed to save key (localStorage error):", e);
+                apiKeyStatus.textContent = "키 저장에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요.";
+                apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                apiKeyStatus.classList.add('text-red-600');
+            }
+        }
+
+        function loadKeyFromStorage(apiKeyInput, apiKeyStatus) {
+            try {
+                const savedKey = localStorage.getItem('injaewonApiKey_math_v1'); 
+                if (savedKey) {
+                    globalApiKey = savedKey;
+                    apiKeyInput.value = '**********' + savedKey.slice(-4); 
+                    apiKeyStatus.textContent = '저장된 API 키를 불러왔습니다. (새 키 입력 시 덮어씁니다)';
+                    apiKeyStatus.classList.remove('hidden', 'text-red-600');
+                    apiKeyStatus.classList.add('text-green-600');
+                } else {
+                    apiKeyStatus.textContent = "AI 자동 생성을 사용하려면 API 키를 입력 후 '키 저장하기'를 눌러주세요."; 
+                    apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                    apiKeyStatus.classList.add('text-red-600');
+                }
+            } catch (e) {
+                console.error("Failed to load key (localStorage error):", e);
+                apiKeyStatus.textContent = "키 로드에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요.";
+                apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                apiKeyStatus.classList.add('text-red-600');
+            }
+        }
+        
+        initializeApp();
+    </script>
+</body>
+</html>
