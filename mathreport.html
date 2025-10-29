@@ -21,30 +21,52 @@
             .report-card { box-shadow: none !important; border: 1px solid #e5e7eb; margin-bottom: 1rem !important;}
             .report-card h3 svg { display: none !important; }
              #report-header { margin-bottom: 1rem !important; }
+             #report-view > .watermark-container { background-image: none !important; } 
         }
         textarea { resize: none; overflow-y: hidden; }
         .test-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: end; }
         .test-score-display { margin-top: 0.5rem; font-weight: 600; color: #4f46e5; }
         .custom-test-name-input { margin-bottom: 0.5rem; }
-        .report-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .report-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); position: relative; z-index: 1;} 
         .report-card h3 { display: flex; align-items: center; font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.75rem; }
          .report-card h3 svg { width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; color: #4f46e5; }
         .report-card p, .report-card ul li { font-size: 0.95rem; color: #4b5563; line-height: 1.6; white-space: pre-wrap; }
         .report-card ul { list-style-type: none; padding-left: 0; }
         .report-card ul li { position: relative; padding-left: 1.25rem; margin-bottom: 0.25rem; }
          .report-card ul li::before { content: "✓"; position: absolute; left: 0; color: #4f46e5; font-weight: bold; }
-         #report-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; }
-         #report-header img { width: 4rem; height: 4rem; margin: 0 auto 1rem auto; } 
-         #report-header h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; }
+         #report-header { text-align: center; margin-bottom: 2rem; padding-top: 1rem; position: relative; z-index: 1;} 
+         #report-header h1 { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-top: 1rem; } 
          #report-header p { font-size: 0.875rem; color: #6b7280; }
          label .required-star { color: #ef4444; margin-left: 2px; }
          .error-highlight { border-color: #ef4444 !important; }
+         
+         .watermark-container {
+             position: relative; 
+             overflow: hidden; /* Prevent pseudo-element overflow */
+             background-color: #f9fafb; /* bg-gray-50 */
+         }
+         .watermark-container::before {
+            content: "";
+            position: absolute;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            width: 300px; /* Watermark width */
+            height: 300px; /* Watermark height */
+            background-image: url('https://bigshol.github.io/report-generator/academy_logo%20(circle).png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: contain; 
+            opacity: 0.1; /* Watermark opacity */
+            transform: translate(-50%, -50%); /* Precise centering */
+            z-index: 0; 
+            pointer-events: none; 
+        }
+
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div id="input-section">
-       
         <div class="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl space-y-8">
             <div class="text-center">
                 <h1 class="text-3xl font-bold text-indigo-700">인재원 수학 학생 리포트</h1>
@@ -78,11 +100,7 @@
                     <div>
                         <label for="parentSelect" class="block text-sm font-medium text-gray-700 mb-1">리포트 받으시는 분</label>
                         <select id="parentSelect" class="w-full p-3 border border-gray-300 rounded-lg bg-white shadow-sm">
-                            <option value="부모님께">부모님께</option>
-                            <option value="어머님께">어머님께</option>
-                            <option value="아버님께">아버님께</option>
-                            <option value="할머님께">할머님께</option>
-                            <option value="할아버님께">할아버님께</option>
+                            <option value="부모님께">부모님께</option> <option value="어머님께">어머님께</option> <option value="아버님께">아버님께</option> <option value="할머님께">할머님께</option> <option value="할아버님께">할아버님께</option>
                         </select>
                     </div>
                     <div>
@@ -106,32 +124,26 @@
 
             <div class="space-y-6">
                 <h2 class="text-xl font-semibold text-gray-800 border-l-4 border-indigo-500 pl-3">2. 수학 테스트 결과</h2>
-                
                 <div class="p-4 border rounded-lg space-y-3">
                     <p class="font-medium text-gray-700">일일테스트 (지난 시간 복습)</p>
                     <div class="test-input-grid">
                         <div><label for="totalQ_daily" class="block text-sm text-gray-600 mb-1">총 문항</label><input type="number" id="totalQ_daily" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="10"></div>
                         <div><label for="correctA_daily" class="block text-sm text-gray-600 mb-1">정답 수</label><input type="number" id="correctA_daily" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="8"></div>
-                    </div>
-                    <p id="scoreDisplay_daily" class="test-score-display text-sm"></p>
+                    </div> <p id="scoreDisplay_daily" class="test-score-display text-sm"></p>
                 </div>
-
                 <div class="p-4 border rounded-lg space-y-3">
                     <p class="font-medium text-gray-700">확인테스트 (오늘 수업)</p>
                      <div class="test-input-grid">
                         <div><label for="totalQ_confirm" class="block text-sm text-gray-600 mb-1">총 문항</label><input type="number" id="totalQ_confirm" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="5"></div>
                         <div><label for="correctA_confirm" class="block text-sm text-gray-600 mb-1">정답 수</label><input type="number" id="correctA_confirm" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="4"></div>
-                    </div>
-                     <p id="scoreDisplay_confirm" class="test-score-display text-sm"></p>
+                    </div> <p id="scoreDisplay_confirm" class="test-score-display text-sm"></p>
                 </div>
-
                 <div class="p-4 border rounded-lg space-y-3">
                     <input type="text" id="customTestName" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm custom-test-name-input font-medium" placeholder="추가 테스트 이름 입력 (예: 단원평가)">
                      <div class="test-input-grid">
                         <div><label for="totalQ_custom" class="block text-sm text-gray-600 mb-1">총 문항</label><input type="number" id="totalQ_custom" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="25"></div>
                         <div><label for="correctA_custom" class="block text-sm text-gray-600 mb-1">정답 수</label><input type="number" id="correctA_custom" class="w-full p-2 border border-gray-300 rounded-lg shadow-sm" placeholder="20"></div>
-                    </div>
-                     <p id="scoreDisplay_custom" class="test-score-display text-sm"></p>
+                    </div> <p id="scoreDisplay_custom" class="test-score-display text-sm"></p>
                 </div>
             </div>
 
@@ -170,7 +182,7 @@
     </div>
 
     <div id="report-view" class="hidden">
-        <div class="max-w-2xl mx-auto p-6 md:p-8 bg-gray-50 rounded-lg" style="font-family: 'Noto Sans KR', sans-serif;">
+        <div class="max-w-2xl mx-auto p-6 md:p-8 rounded-lg watermark-container" style="font-family: 'Noto Sans KR', sans-serif;">
             
             <div id="report-buttons" class="mb-6 flex flex-col sm:flex-row gap-2 print:hidden">
                 <button id="editButton" class="w-full sm:w-auto flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-700 transition duration-200 text-sm">내용 수정하기</button>
@@ -178,7 +190,6 @@
             </div>
 
             <div id="report-header" class="text-center mb-8 pt-4">
-                 <img id="report-header-logo" src="https://bigshol.github.io/report-generator/academy_logo%20(circle).png" alt="학원 로고" class="w-16 h-16 mx-auto mb-4">
                 <h1 id="report-student-name-header" class="text-xl font-semibold text-gray-800"></h1>
                 <p id="report-date-header" class="text-sm text-gray-500"></p>
             </div>
@@ -224,11 +235,7 @@
     </div>
 
     <script>
-        let globalApiKey = ""; 
-        let outputChartInstance = null;
-        let chartDataStore = {};
-        let isInitialized = false; 
-        let isGenerating = false; 
+        let globalApiKey = ""; let outputChartInstance = null; let chartDataStore = {}; let isInitialized = false; let isGenerating = false; 
         function calculateScore(correct, total) { if (!total || total <= 0) return 0; const score = Math.round((correct / total) * 100); return Math.max(0, Math.min(score, 100)); }
         function autoGrowTextarea(element) { if (!element) return; element.style.height = 'auto'; element.style.height = (element.scrollHeight) + 'px'; }
         function getDayOfWeek(dateStr) { try { const date = new Date(dateStr); const days = ['일', '월', '화', '수', '목', '금', '토']; const dayIndex = date.getUTCDay(); return days[dayIndex]; } catch (e) { return ''; } }
@@ -345,36 +352,10 @@
             }
             throw new Error("Failed to generate report after multiple retries.");
         }
-        function setLoading(isLoading, generateButton, buttonText, loadingSpinner, errorMessage) {
-            if (isLoading) { generateButton.disabled = true; buttonText.textContent = "AI가 생성 중입니다..."; loadingSpinner.classList.remove('hidden'); errorMessage.classList.add('hidden'); } 
-            else { generateButton.disabled = false; buttonText.textContent = "리포트 생성하기"; loadingSpinner.classList.add('hidden'); }
-        }
+        function setLoading(isLoading, generateButton, buttonText, loadingSpinner, errorMessage) { if (isLoading) { generateButton.disabled = true; buttonText.textContent = "AI가 생성 중입니다..."; loadingSpinner.classList.remove('hidden'); errorMessage.classList.add('hidden'); } else { generateButton.disabled = false; buttonText.textContent = "리포트 생성하기"; loadingSpinner.classList.add('hidden'); } }
         function showError(message, errorMessage) { if (!errorMessage) return; errorMessage.textContent = message; errorMessage.classList.remove('hidden'); }
-        function saveKeyToStorage(apiKeyInput, apiKeyStatus) {
-            try {
-                const key = apiKeyInput.value.trim();
-                if (key && key.startsWith('AIza')) { 
-                    localStorage.setItem('injaewonApiKey_math_v1', key); globalApiKey = key;
-                    apiKeyStatus.textContent = 'API 키가 브라우저에 안전하게 저장되었습니다.'; apiKeyStatus.classList.remove('hidden', 'text-red-600'); apiKeyStatus.classList.add('text-green-600');
-                    apiKeyInput.value = '**********' + key.slice(-4); 
-                } else { apiKeyStatus.textContent = "유효하지 않은 API 키 형식입니다. 'AIza...'로 시작해야 합니다."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); }
-            } catch (e) {
-                console.error("Failed to save key (localStorage error):", e);
-                apiKeyStatus.textContent = "키 저장에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600');
-            }
-        }
-        function loadKeyFromStorage(apiKeyInput, apiKeyStatus) {
-            try {
-                const savedKey = localStorage.getItem('injaewonApiKey_math_v1'); 
-                if (savedKey) {
-                    globalApiKey = savedKey; apiKeyInput.value = '**********' + savedKey.slice(-4); 
-                    apiKeyStatus.textContent = '저장된 API 키를 불러왔습니다. (새 키 입력 시 덮어씁니다)'; apiKeyStatus.classList.remove('hidden', 'text-red-600'); apiKeyStatus.classList.add('text-green-600');
-                } else { apiKeyStatus.textContent = "AI 자동 생성을 사용하려면 API 키를 입력 후 '키 저장하기'를 눌러주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); }
-            } catch (e) {
-                console.error("Failed to load key (localStorage error):", e);
-                apiKeyStatus.textContent = "키 로드에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600');
-            }
-        }
+        function saveKeyToStorage(apiKeyInput, apiKeyStatus) { try { const key = apiKeyInput.value.trim(); if (key && key.startsWith('AIza')) { localStorage.setItem('injaewonApiKey_math_v1', key); globalApiKey = key; apiKeyStatus.textContent = 'API 키가 브라우저에 안전하게 저장되었습니다.'; apiKeyStatus.classList.remove('hidden', 'text-red-600'); apiKeyStatus.classList.add('text-green-600'); apiKeyInput.value = '**********' + key.slice(-4); } else { apiKeyStatus.textContent = "유효하지 않은 API 키 형식입니다. 'AIza...'로 시작해야 합니다."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); } } catch (e) { console.error("Failed to save key (localStorage error):", e); apiKeyStatus.textContent = "키 저장에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); } }
+        function loadKeyFromStorage(apiKeyInput, apiKeyStatus) { try { const savedKey = localStorage.getItem('injaewonApiKey_math_v1'); if (savedKey) { globalApiKey = savedKey; apiKeyInput.value = '**********' + savedKey.slice(-4); apiKeyStatus.textContent = '저장된 API 키를 불러왔습니다. (새 키 입력 시 덮어씁니다)'; apiKeyStatus.classList.remove('hidden', 'text-red-600'); apiKeyStatus.classList.add('text-green-600'); } else { apiKeyStatus.textContent = "AI 자동 생성을 사용하려면 API 키를 입력 후 '키 저장하기'를 눌러주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); } } catch (e) { console.error("Failed to load key (localStorage error):", e); apiKeyStatus.textContent = "키 로드에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요."; apiKeyStatus.classList.remove('hidden', 'text-green-600'); apiKeyStatus.classList.add('text-red-600'); } }
         initializeApp();
     </script>
 </body>
