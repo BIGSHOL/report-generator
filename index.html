@@ -288,7 +288,11 @@
     </div>
 
 
-    <script type="module">
+    <!-- 
+      <script type="module"> 
+      이 부분의 type="module"을 삭제했습니다.
+    -->
+    <script>
         let globalApiKey = ""; // API 키를 저장할 전역 변수
 
         // --- DOM 요소 참조 ---
@@ -328,11 +332,16 @@
         // --- 초기화 ---
         function initializeApp() {
             // Flatpickr (달력) 초기화
-            flatpickr(reportDateInput, {
-                dateFormat: "Y-m-d",
-                defaultDate: "today",
-                locale: "ko"
-            });
+            try {
+                flatpickr(reportDateInput, {
+                    dateFormat: "Y-m-d",
+                    defaultDate: "today",
+                    locale: "ko"
+                });
+            } catch (e) {
+                console.error("Flatpickr 로딩 실패:", e);
+                reportDateInput.placeholder = "YYYY-MM-DD (날짜 로딩 실패)";
+            }
             
             loadKeyFromStorage(); // 앱 시작 시 API 키 불러오기
 
@@ -352,10 +361,19 @@
             generateButton.addEventListener('click', handleGenerateReport);
             editButton.addEventListener('click', showInputView);
             printButton.addEventListener('click', () => window.print());
-            saveApiKey.addEventListener('click', saveKeyToStorage); // 키 저장 버튼
-            apiKeyInput.addEventListener('input', () => {
-                apiKeyStatus.classList.add('hidden'); // 키 입력 시작하면 상태 메시지 숨김
-            });
+            
+            // !! 중요: saveApiKey가 null이 아닌지 확인 후 이벤트 리스너 등록
+            if (saveApiKey) {
+                saveApiKey.addEventListener('click', saveKeyToStorage);
+            } else {
+                console.error("saveApiKey 버튼을 찾을 수 없습니다.");
+            }
+            
+            if(apiKeyInput) {
+                apiKeyInput.addEventListener('input', () => {
+                    if(apiKeyStatus) apiKeyStatus.classList.add('hidden'); // 키 입력 시작하면 상태 메시지 숨김
+                });
+            }
         }
 
         // --- 차트 데이터 관리 ---
@@ -433,30 +451,37 @@
 
         // --- 차트 렌더링 ---
         function renderInputChart() {
-            const ctx = document.getElementById('scoreChartInput').getContext('2d');
-            if (inputChartInstance) {
-                inputChartInstance.data = chartDataStore;
-                inputChartInstance.update();
-            } else {
-                inputChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: chartDataStore,
-                    options: chartOptions
-                });
+            try {
+                const ctx = document.getElementById('scoreChartInput').getContext('2d');
+                if (inputChartInstance) {
+                    inputChartInstance.data = chartDataStore;
+                    inputChartInstance.update();
+                } else {
+                    inputChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: chartDataStore,
+                        options: chartOptions
+                    });
+                }
+            } catch (e) {
+                console.error("입력 차트 렌더링 실패:", e);
             }
         }
         
         function renderOutputChart() {
-            const ctx = document.getElementById('scoreChartOutput').getContext('2d');
-            if (outputChartInstance) {
-                outputChartInstance.destroy();
+            try {
+                const ctx = document.getElementById('scoreChartOutput').getContext('2d');
+                if (outputChartInstance) {
+                    outputChartInstance.destroy();
+                }
+                outputChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartDataStore, 
+                    options: chartOptions
+                });
+            } catch (e) {
+                console.error("출력 차트 렌더링 실패:", e);
             }
-            // 출력 차트는 input 차트와 동일한 데이터/옵션을 사용
-            outputChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: chartDataStore, 
-                options: chartOptions
-            });
         }
 
 
@@ -464,12 +489,9 @@
         function showInputView() {
             reportView.classList.add('hidden');
             inputSection.classList.remove('hidden');
-            // 입력 폼 차트가 파괴되었을 수 있으니 다시 렌더링
-            // 차트 인스턴스가 유효한지 확인 후 렌더링
-             if (!inputChartInstance || !inputChartInstance.ctx) {
+            if (!inputChartInstance || !inputChartInstance.ctx) {
                 renderInputChart();
             } else {
-                 // 차트 데이터만 업데이트
                 updateChartData();
                 inputChartInstance.data = chartDataStore;
                 inputChartInstance.update();
@@ -477,26 +499,20 @@
         }
 
         function showReportView(reportText, studentName, reportDate) {
-            // 1. 리포트 뷰에 데이터 채우기
             reportStudentName.textContent = `${studentName} 학생`;
             reportDateDisplay.textContent = `${formatDateString(reportDate)} 리포트`;
             reportContent.textContent = reportText;
-            
-            // 2. 리포트 뷰 차트 렌더링 (데이터는 이미 chartDataStore에 있음)
             renderOutputChart();
-
-            // 3. 뷰 전환
             inputSection.classList.add('hidden');
             reportView.classList.remove('hidden');
-            window.scrollTo(0, 0); // 페이지 상단으로 스크롤
+            window.scrollTo(0, 0); 
         }
 
         // --- AI 리포트 생성 핸들러 ---
         async function handleGenerateReport() {
-            // API 키 유무 체크 (신규 추가)
             if (!globalApiKey) {
                 showError("API 키를 먼저 '0. API 키 설정'에서 입력하고 저장해 주세요.");
-                apiKeyInput.focus();
+                if(apiKeyInput) apiKeyInput.focus();
                 return;
             }
 
@@ -514,10 +530,8 @@
                 return;
             }
 
-            // 로딩 상태 시작
             setLoading(true);
 
-            // 1. 점수 데이터 수집
             const scores = {
                 "듣기": scoreListening.value || 0,
                 "독해": scoreReading.value || 0,
@@ -525,7 +539,6 @@
                 "어휘": scoreVocab.value || 0
             };
 
-            // 2. 선택된 특성 데이터 수집
             let characteristics = [];
             selectElements.forEach(select => {
                 if (select.value) {
@@ -537,7 +550,6 @@
                 }
             });
 
-            // 3. AI 프롬프트 구성
             const systemPrompt = `당신은 '인재원 영어' 학원의 전문적이고 따뜻한 선생님입니다.
 학부모님께 학생의 리포트를 전달하는 역할을 맡고 있습니다.
 제공되는 학생의 정량적(점수) 및 정성적(특성) 데이터를 바탕으로, 자연스러운 하나의 완성된 리포트를 한국어로 작성해 주세요.
@@ -561,16 +573,13 @@
             userQuery += "**학습 태도 및 역량:**\n" + JSON.stringify(characteristics) + "\n\n";
             userQuery += "이 데이터를 바탕으로, 위 시스템 프롬프트의 모든 규칙을 준수하여 학부모님께 보낼 리포트 본문만 작성해 주세요.";
 
-            // 4. API 호출
             try {
                 const generatedText = await callGeminiAPI(systemPrompt, userQuery);
-                // 5. 리포트 뷰 표시
                 showReportView(generatedText, studentName, reportDate);
             } catch (error) {
                 console.error("AI 생성 실패:", error);
                 showError("리포트 생성에 실패했습니다. " + error.message);
             } finally {
-                // 6. 로딩 상태 종료
                 setLoading(false);
             }
         }
@@ -610,4 +619,115 @@
                         if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
                             return result.candidates[0].content.parts[0].text.trim();
                         } else {
-                            throw new Error("AI로부터 유효한 응답을 받
+                            throw new Error("AI로부터 유효한 응답을 받지 못했습니다. (응답 형식 오류)");
+                        }
+                    } else {
+                        if (response.status === 429 || response.status >= 500) {
+                            if (i === retries - 1) throw new Error(`서버 오류 또는 요청 한도 초과 (Status: ${response.status})`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2; 
+                        } else {
+                            const errorBody = await response.json();
+                            throw new Error(`API 오류: ${errorBody.error?.message || response.statusText}`);
+                        }
+                    }
+                } catch (networkError) {
+                    if (i === retries - 1) throw new Error(`네트워크 오류: ${networkError.message}`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+            throw new Error("알 수 없는 오류로 생성에 실패했습니다.");
+        }
+
+
+        // --- 유틸리티 함수 ---
+        function setLoading(isLoading) {
+            if (isLoading) {
+                generateButton.disabled = true;
+                buttonText.textContent = "리포트 생성 중입니다...";
+                loadingSpinner.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
+            } else {
+                generateButton.disabled = false;
+                buttonText.textContent = "리포트 생성하기";
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function formatDateString(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                const offset = date.getTimezoneOffset() * 60000;
+                const correctedDate = new Date(date.getTime() + offset);
+                
+                const year = correctedDate.getFullYear();
+                const month = correctedDate.getMonth() + 1;
+                const day = correctedDate.getDate();
+                return `${year}년 ${month}월 ${day}일`;
+            } catch (e) {
+                return dateStr; 
+            }
+        }
+
+        // --- API 키 관리 함수 (신규 추가) ---
+        function saveKeyToStorage() {
+            try {
+                const key = apiKeyInput.value.trim();
+                if (key && key.startsWith('AIza')) { 
+                    localStorage.setItem('injaewonApiKey_v3', key);
+                    globalApiKey = key;
+                    apiKeyStatus.textContent = 'API 키가 브라우저에 안전하게 저장되었습니다.';
+                    apiKeyStatus.classList.remove('hidden', 'text-red-600');
+                    apiKeyStatus.classList.add('text-green-600');
+                    apiKeyInput.value = '**********' + key.slice(-4); 
+                } else {
+                    apiKeyStatus.textContent = "유효하지 않은 API 키 형식입니다. 'AIza...'로 시작해야 합니다.";
+                    apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                    apiKeyStatus.classList.add('text-red-600');
+                }
+            } catch (e) {
+                console.error("키 저장 실패 (localStorage 오류):", e);
+                apiKeyStatus.textContent = "키 저장에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요.";
+                apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                apiKeyStatus.classList.add('text-red-600');
+            }
+        }
+
+        function loadKeyFromStorage() {
+            try {
+                const savedKey = localStorage.getItem('injaewonApiKey_v3');
+                if (savedKey) {
+                    globalApiKey = savedKey;
+                    apiKeyInput.value = '**********' + savedKey.slice(-4); 
+                    apiKeyStatus.textContent = '저장된 API 키를 불러왔습니다. (새 키 입력 시 덮어씁니다)';
+                    apiKeyStatus.classList.remove('hidden', 'text-red-600');
+                    apiKeyStatus.classList.add('text-green-600');
+                } else {
+                    apiKeyStatus.textContent = "Google AI Studio에서 발급받은 API 키를 입력 후 '키 저장하기'를 눌러주세요.";
+                    apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                    apiKeyStatus.classList.add('text-red-600');
+                }
+            } catch (e) {
+                console.error("키 로드 실패 (localStorage 오류):", e);
+                apiKeyStatus.textContent = "키 로드에 실패했습니다. 브라우저의 쿠키/사이트 데이터 저장 설정을 확인해주세요.";
+                apiKeyStatus.classList.remove('hidden', 'text-green-600');
+                apiKeyStatus.classList.add('text-red-600');
+            }
+        }
+
+        // --- 앱 시작 ---
+        // DOM이 완전히 로드된 후에 스크립트를 실행하도록 보장합니다.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>
