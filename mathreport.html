@@ -20,18 +20,22 @@
             background-color: #f0f2f5; /* 페이지 전체 배경색 */
         }
 
-        /* [수정] 콘텐츠를 중앙 정렬하는 래퍼 (너비 540px로 증가) */
+        /* [수정] 콘텐츠 래퍼 너비 620px로 증가 */
         .report-wrapper {
-            max-width: 540px; /* 500px -> 540px */
+            max-width: 640px; /* 540px -> 620px */
             margin: 0 auto; /* 화면 중앙 정렬 */
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
             background-color: #f8fafc; /* 앱 내부 배경색 */
             min-height: 100vh;
-            overflow: hidden; /* [추가] <img> 태그가 래퍼를 벗어나지 않도록 */
+            overflow: hidden; 
+            /* [추가] 요청하신 테두리 */
+            border-left: 10pt solid #5b5b5b;
+            border-right: 10pt solid #ffd34c;
+            box-sizing: border-box; /* 테두리를 max-width에 포함 */
         }
         
-        /* [수정] 배경 이미지 스타일 (DIV 배경으로 복귀) */
+        /* 배경 이미지 스타일 */
         #page-background {
             background-image: url('https://bigshol.github.io/report-generator/background2.png');
             background-position: top center;
@@ -54,12 +58,11 @@
         
         .flatpickr-calendar { font-family: 'Noto Sans KR', sans-serif; }
         
-        /* [수정] 인쇄 스타일 */
+        /* 인쇄 스타일 */
         @media print {
             body { 
                 background-color: #ffffff !important;
                 background-image: none !important;
-                /* 브라우저가 배경 그래픽을 인쇄하도록 강제 (일부 브라우저만 지원) */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -69,8 +72,9 @@
                 box-shadow: none !important;
                 min-height: auto !important;
                 overflow: visible !important;
+                border-left: none !important; /* 인쇄 시 테두리 제거 */
+                border-right: none !important; /* 인쇄 시 테두리 제거 */
             }
-            /* [수정] 인쇄 시 static 레이아웃으로 변경 (배경 제외) */
             body, .report-wrapper, #input-section, #report-view, #report-header {
                 position: static !important;
                 z-index: auto !important;
@@ -92,20 +96,18 @@
                 padding: 1rem !important; 
             }
             
-            /* [수정] 배경 div를 인쇄 시 보이도록 수정 (브라우저 설정 필요) */
             #page-background { 
                 display: block !important; 
-                position: absolute !important; /* 인쇄 시에도 위치 고정 */
+                position: absolute !important; 
                 top: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
-                width: 100% !important; /* 페이지 너비에 맞춤 */
+                width: 100% !important; 
                 height: 400px !important;
-                z-index: -1 !important; /* 내용 뒤로 보내기 */
-                opacity: 0.8 !important; /* 인쇄 시 살짝 연하게 */
+                z-index: -1 !important; 
+                opacity: 0.8 !important; 
             }
             
-            /* 로고와 아이콘 인쇄 시 보이도록 수정 */
             #report-header img { display: block !important; } 
             .report-card-header .icon-wrap img { display: block !important; }
 
@@ -116,12 +118,11 @@
                 page-break-inside: avoid; 
             }
             
-            /* 인쇄 시 편집 불가능하게 */
             .editable-textarea {
-                display: none !important; /* 인쇄 시 textarea 숨김 */
+                display: none !important; 
             }
             .print-only-text {
-                display: block !important; /* 인쇄 시에만 p 태그 보임 */
+                display: block !important; 
             }
         }
         
@@ -165,7 +166,7 @@
             flex-direction: column;
             align-items: flex-start;
             flex-grow: 1;
-            padding-right: 1rem; /* 아이콘과의 간격 */
+            padding-right: 1rem; 
         }
         .report-card-header .label-en {
             font-size: 0.8rem;
@@ -178,7 +179,6 @@
             color: #1f2937;
             line-height: 1.1;
         }
-        /* [수정] 아이콘 크기 12rem으로 증가 (1.5배) */
         .report-card-header .icon-wrap {
             width: 12rem; 
             height: 12rem;
@@ -230,16 +230,16 @@
             padding: 0;
             margin: 0;
             font-family: inherit;
-            font-size: 1.1rem; /* p태그와 동일하게 */
-            font-weight: 500; /* p태그와 동일하게 */
-            line-height: 1.7; /* p태그와 동일하게 */
-            color: #374151; /* p태그와 동일하게 */
+            font-size: 1.1rem; 
+            font-weight: 500; 
+            line-height: 1.7; 
+            color: #374151; 
             white-space: pre-wrap;
             overflow-y: hidden; 
             background-color: transparent;
             -webkit-user-select: text; 
             user-select: text;
-            min-height: 100px; /* 최소 높이 설정 */
+            min-height: 100px; 
         }
         .editable-textarea:focus {
             outline: 1px solid #d1d5db; 
@@ -248,9 +248,8 @@
             background-color: #fafafa; 
         }
         
-        /* [추가] 인쇄/캡처용 텍스트 (평소엔 숨김) */
         .print-only-text {
-            display: none; /* 평소에는 숨김 */
+            display: none; 
             font-size: 1.1rem; 
             color: #374151; 
             line-height: 1.7; 
