@@ -26,23 +26,21 @@
             position: relative;
             background-color: #f8fafc; /* 앱 내부 배경색 */
             min-height: 100vh;
-            overflow: hidden; /* [추가] <img> 태그가 래퍼를 벗어나지 않도록 */
         }
         
-        /* [수정] 배경 이미지 스타일 (이제 <img> 태그를 제어) */
-        #page-background-img {
+        /* 배경 이미지 스타일 */
+        #page-background {
+            background-image: url('https://bigshol.github.io/report-generator/background2.png');
             background-position: top center;
             background-repeat: no-repeat;
+            background-size: 100% auto;
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            width: 100%;
             height: 400px; /* 배경 이미지 높이 고정 */
             z-index: 0;
             opacity: 0.9;
-            object-fit: cover; /* 이미지가 래퍼를 꽉 채우도록 */
-            object-position: top center;
         }
 
         /* 콘텐츠가 배경 위에 오도록 z-index 설정 */
@@ -67,10 +65,9 @@
                 margin: 0 !important;
                 box-shadow: none !important;
                 min-height: auto !important;
-                overflow: visible !important;
             }
             /* 인쇄 시 강제로 static 레이아웃으로 변경 */
-            body, .report-wrapper, #input-section, #report-view, #report-header {
+            body, .report-wrapper, #page-background, #input-section, #report-view, #report-header {
                 position: static !important;
                 z-index: auto !important;
                 padding-top: 0 !important; 
@@ -91,17 +88,15 @@
                 padding: 1rem !important; 
             }
             
-            /* [수정] 배경 <img> 태그 인쇄 스타일 */
-            #page-background-img { 
+            /* [수정] 배경 이미지를 인쇄 시 보이도록 시도 (브라우저 설정 필요) */
+            #page-background { 
                 display: block !important; 
                 position: absolute !important; /* 인쇄 시에도 위치 고정 */
                 top: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
-                width: 100% !important;
                 height: 400px !important;
                 z-index: -1 !important; /* 내용 뒤로 보내기 */
-                opacity: 0.8 !important; /* 인쇄 시 살짝 연하게 */
             }
             
             /* 로고와 아이콘 인쇄 시 보이도록 수정 */
@@ -353,8 +348,8 @@
     <!-- 전체 콘텐츠를 감싸고 중앙 정렬하는 래퍼 -->
     <div class="report-wrapper">
     
-        <!-- [수정] 배경 이미지를 <img> 태그로 변경 -->
-        <img id="page-background-img" src="https://bigshol.github.io/report-generator/background2.png" alt="Report Background">
+        <!-- 배경 이미지 컨테이너 -->
+        <div id="page-background"></div>
 
         <!-- 입력 섹션 -->
         <div id="input-section" class="p-4">
@@ -681,7 +676,6 @@
                             printP.textContent = commentText;
                         }
                         
-                        // [수정] teacherComment 'p' 태그의 ID를 사용
                         const teacherCommentP = document.getElementById('report-teacher-comment-display');
                         const printTeacherP = document.getElementById('report-teacher-comment-print');
                         if (teacherCommentP && printTeacherP) {
@@ -949,4 +943,3 @@
     </div> <!-- 래퍼 종료 -->
 </body>
 </html>
-
