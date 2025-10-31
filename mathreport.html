@@ -56,6 +56,9 @@
             body { 
                 background-color: #ffffff !important;
                 background-image: none !important;
+                /* 브라우저가 배경 그래픽을 인쇄하도록 강제 (일부 브라우저만 지원) */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .report-wrapper {
                 max-width: 100% !important;
@@ -84,7 +87,17 @@
                 border: none !important; 
                 padding: 1rem !important; 
             }
-            #page-background { display: none !important; }
+            
+            /* [수정] 배경 이미지를 인쇄 시 보이도록 시도 (브라우저 설정 필요) */
+            #page-background { 
+                display: block !important; 
+                position: absolute !important; /* 인쇄 시에도 위치 고정 */
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 400px !important;
+                z-index: -1 !important; /* 내용 뒤로 보내기 */
+            }
             
             /* 로고와 아이콘 인쇄 시 보이도록 수정 */
             #report-header img { display: block !important; } 
@@ -101,7 +114,9 @@
             .editable-textarea {
                 display: none !important; /* 인쇄 시 textarea 숨김 */
             }
-            /* p 태그는 print:hidden 클래스가 없으므로 기본 p 스타일 상속 */
+            .print-only-text {
+                display: block !important; /* 인쇄 시에만 p 태그 보임 */
+            }
         }
         
         /* 텍스트 영역 기본 스타일 */
@@ -224,6 +239,16 @@
             box-shadow: 0 0 5px rgba(79, 70, 229, 0.1);
             border-radius: 0.25rem;
             background-color: #fafafa; 
+        }
+        
+        /* [추가] 인쇄용 텍스트 (평소엔 숨김) */
+        .print-only-text {
+            display: none;
+            font-size: 1.1rem; 
+            color: #374151; 
+            line-height: 1.7; 
+            white-space: pre-wrap; 
+            font-weight: 500;
         }
         
         /* 리포트 헤더 (이름, 날짜) */
@@ -543,9 +568,8 @@
                         </div>
                     </div>
                     <div class="divider"></div>
-                    <!-- [수정] 인쇄용 p태그 추가 -->
                     <p id="report-teacher-comment-display" class="print:hidden"></p>
-                    <p id="report-teacher-comment-print" class="hidden print:block"></p>
+                    <p id="report-teacher-comment-print" class="print-only-text hidden"></p>
                 </div>
 
                 <!-- '전하는 말' 편집 가능하도록 <textarea>로 변경 -->
@@ -560,9 +584,8 @@
                         </div>
                     </div>
                     <div class="divider"></div>
-                    <!-- [수정] 인쇄용 p태그 추가 -->
                     <textarea id="report-comment-display" class="editable-textarea print:hidden"></textarea>
-                    <p id="report-comment-print" class="hidden print:block"></p>
+                    <p id="report-comment-print" class="print-only-text hidden"></p>
                 </div>
                 
                 <!-- 하단 푸터 (랜덤 문구용) -->
@@ -710,12 +733,14 @@
                 } catch (e) { console.error("Output chart render failed:", e); }
             }
             
+            // [수정] showInputView 함수에 autoGrowTextarea(reportCommentDisplay) 추가
             function showInputView(reportView, inputSection, testInputs, todayProgressInput, todayHomeworkInput, teacherCommentInput) { 
                 reportView.classList.add('hidden'); inputSection.classList.remove('hidden');
                 Object.keys(testInputs).filter(key => key.startsWith('scoreDisplay')).forEach(displayKey => { const type = displayKey.split('_')[1]; updateScoreDisplay(type); });
-                autoGrowTextarea(todayProgressInput); autoGrowTextarea(todayHomeworkInput); autoGrowTextarea(teacherCommentInput); 
+                autoGrowTextarea(todayProgressInput); 
+                autoGrowTextarea(todayHomeworkInput); 
+                autoGrowTextarea(teacherCommentInput); 
                 
-                // [추가] '전하는 말' 칸도 높이 조절 (수정 후 돌아올 때)
                 const reportCommentDisplay = document.getElementById('report-comment-display');
                 if (reportCommentDisplay) {
                     autoGrowTextarea(reportCommentDisplay);
@@ -750,7 +775,7 @@
                 }
                 
                 reportCommentDisplay.value = generatedComment || "(코멘트 생성 실패)"; 
-                autoGrowTextarea(reportCommentDisplay); // 높이 자동 조절
+                autoGrowTextarea(reportCommentDisplay); // [수정] 생성 직후 높이 자동 조절
 
                 // 랜덤 푸터 문구 설정
                 const reportFooterQuote = document.getElementById('report-footer-quote');
